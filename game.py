@@ -72,11 +72,6 @@ class Player:
                 del self.path[0]
             self.hitbox.center = (round(self.position[0]), round(self.position[1]))
 
-def start(screensize):
-    pg.init()
-    clock = pg.time.Clock()
-    screen = pg.display.set_mode(screensize)
-    return screen, clock
     
 def drawterrain(terrain, surface):
     for elem in terrain:
