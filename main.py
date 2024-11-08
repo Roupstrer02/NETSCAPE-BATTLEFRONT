@@ -72,7 +72,9 @@ while True:
     if keys[pg.K_q] and zoomScale>0.2:
         zoomScale=zoomScale/1.04
         
-
+    #temp
+    mousexy=pg.mouse.get_pos()
+    test=screenToWorldCoords(mousexy)
 
 
     #Drawing World Map
@@ -81,7 +83,12 @@ while True:
     #DRAW HERE WORLD ELEMENTS HERE-------------------------------------------
 
     pg.draw.rect(world,"red",(2120-1,1550-1,2,2))
+<<<<<<< Updated upstream
     player.draw(world)
+=======
+
+    pg.draw.rect(world,"red",test)
+>>>>>>> Stashed changes
 
     #------------------------------------------------------------------------
 
