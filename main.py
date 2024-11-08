@@ -36,14 +36,11 @@ startingZoomScale = 1#<--------------------Change Starting Zoom Scale Here
 cameraCoords = startingCameraWorldCoords
 zoomScale = startingZoomScale
 
-#arena walls
-testwall = pg.Rect(800,450,1,1)
-testwall = testwall.inflate(500,200)
-
-arena = [testwall]
-
 #player declaration
-player = Player(400, 400, arena)
+player = Player(400, 400)
+
+#student army declaration
+studentArmy = []
 
 while True:
 
@@ -84,7 +81,7 @@ while True:
     #DRAW HERE WORLD ELEMENTS HERE-------------------------------------------
 
     pg.draw.rect(world,"red",(2120-1,1550-1,2,2))
-
+    player.draw(world)
 
     #------------------------------------------------------------------------
 

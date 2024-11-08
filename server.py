@@ -22,6 +22,8 @@ def activate_server():
         with open('student_input.txt', 'a') as f:
             f.write(unit_type + '\n')
 
+        
+
         return render_template('index.html')
 
     app.run(host="0.0.0.0")

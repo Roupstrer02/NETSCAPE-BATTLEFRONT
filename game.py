@@ -12,14 +12,13 @@ class Player:
     #lists waypoint vectors where the player moves towards the first element of the list at all times
     path = []
     
-    def __init__(self, x, y, map):
+    def __init__(self, x, y):
         self.hitbox = pg.Rect(x, y, self.size[0], self.size[1])
         self.reticle = pg.Rect(x, y, self.reticlesize[0], self.reticlesize[1])
         
         #we store position separately
         self.position = pg.Vector2(self.hitbox.center)
         self.target = pg.Vector2(self.hitbox.center)
-        self.mapterrain = map
 
     def draw(self, surface):
         pg.draw.ellipse(surface, "cyan", self.hitbox)
@@ -30,7 +29,7 @@ class Player:
     #user input
     def process_user_input(self):
         pg.event.pump()
-        Mouse_L, Mouse_M, Mouse_R = pg.mouse.get_pressed()
+        _, _, Mouse_R = pg.mouse.get_pressed()
         Mouse_Pos = pg.mouse.get_pos()
 
         if Mouse_R:
@@ -44,21 +43,11 @@ class Player:
         #if i'm going to put in proper pathfinding, it would go here
         return [self.target]
 
-    def checkforwall(self, nextpos):
-        for wall in self.mapterrain:
-            if wall.collidepoint(nextpos):
-                return True
-        else:
-            return False
-
     def update(self):
         if not len(self.path) == 0:
             if not self.path[0] == self.position:
                 direction = pg.Vector2(self.path[0][0] - self.position[0], self.path[0][1] - self.position[1]).normalize()
             else:
-                direction = pg.Vector2((0,0))
-            
-            if self.checkforwall(self.position + self.speed * direction):
                 direction = pg.Vector2((0,0))
 
             #this if/else stops jittering when arriving at any waypoint
