@@ -42,6 +42,12 @@ player = Player(400, 400)
 #student army declaration
 studentArmy = []
 
+def screenToWorldCoords(screenCoord):
+    return (cameraCoords[0]-(screenSize[0]/2-screenCoord[0])/zoomScale,cameraCoords[1]-(screenSize[1]/2-screenCoord[1])/zoomScale)
+
+def worldToScreenCoords(worldCoord):
+    return ((worldCoord[0]-cameraCoords[0])*zoomScale+screenSize[0]/2,(worldCoord[1]-cameraCoords[1])*zoomScale+screenSize[1]/2)
+
 while True:
 
     #user input
@@ -71,11 +77,6 @@ while True:
         
     if keys[pg.K_q] and zoomScale>0.2:
         zoomScale=zoomScale/1.04
-        
-    #temp
-    mousexy=pg.mouse.get_pos()
-    test=screenToWorldCoords(mousexy)
-
 
     #Drawing World Map
     world.blit(worldMap, (0,0))
@@ -87,7 +88,7 @@ while True:
     player.draw(world)
 
 
-    pg.draw.rect(world,"red",test)
+    
 
 
     #------------------------------------------------------------------------
@@ -101,7 +102,6 @@ while True:
     #DRAW HERE UI ELEMENTS HERE----------------------------------------------
 
     pg.draw.rect(screen,"cyan",(0,screenSize[1]-30,screenSize[0],30))
-
 
     #------------------------------------------------------------------------
 

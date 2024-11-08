@@ -73,11 +73,6 @@ def read_student_input():
         f.seek(0)
         f.truncate()
 
-
-#                         v(x,y)v
-def screenToWorldCoords(screenCoord):
-    
-    return (cameraCoords[0]-(screenSize[0]/2-screenCoord[0])/zoomScale,cameraCoords[1]-(screenSize[1]/2-screenCoord[1])/zoomScale)
     
     
     
