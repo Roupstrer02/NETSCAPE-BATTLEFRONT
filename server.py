@@ -40,5 +40,3 @@ def activate_server():
         return render_template('index.html')
 
     app.run(host="0.0.0.0")
-
-activate_server()
