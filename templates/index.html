@@ -29,13 +29,90 @@
               Your have joined the team!
             </p>
             <form method="post">
+              <!-- Unit type selection -->
                 <select name="unit_type" class="select select-bordered w-full max-w-xs">
                     <option>Zergling</option>
                     <option>Roach</option>
                     <option>Hydralisk</option>
                     <option>Ultralisk</option>
                 </select>
+
                 <div class="divider divider-primary"></div>
+
+                <div class="flex w-full">
+
+                  <!-- Unit spawn Location -->
+                  <div class="card bg-base-300 rounded-box grid h-30 flex-grow place-items-center">
+                    <div class="form-control">
+                      <label class="label cursor-pointer">
+                        <span class="label-text mr-3">A: </span>
+                        <input type="radio" name="unit_spawn" class="radio checked:bg-green-500" value="A" checked="checked" />
+                      </label>
+                    </div>
+                    <div class="form-control">
+                      <label class="label cursor-pointer">
+                        <span class="label-text mr-3">B: </span>
+                        <input type="radio" name="unit_spawn" class="radio checked:bg-green-500" value="B"/>
+                      </label>
+                    </div>
+                    <div class="form-control">
+                      <label class="label cursor-pointer">
+                        <span class="label-text mr-3">C: </span>
+                        <input type="radio" name="unit_spawn" class="radio checked:bg-green-500" value="C"/>
+                      </label>
+                    </div>
+                    <div class="form-control">
+                      <label class="label cursor-pointer">
+                        <span class="label-text mr-3">D: </span>
+                        <input type="radio" name="unit_spawn" class="radio checked:bg-green-500" value="D"/>
+                      </label>
+                    </div>
+                  </div>
+
+                  <div class="divider divider-horizontal"></div>
+
+                  <!-- Unit Destination Location -->
+                  <div class="card bg-base-300 rounded-box grid h-30 flex-grow place-items-center">
+                    <div class="form-control">
+                      <label class="label cursor-pointer">
+                        <span class="label-text mr-3">A: </span>
+                        <input type="radio" name="unit_destination" class="radio checked:bg-red-500" value="A" checked="checked" />
+                      </label>
+                    </div>
+                    <div class="form-control">
+                      <label class="label cursor-pointer">
+                        <span class="label-text mr-3">B: </span>
+                        <input type="radio" name="unit_destination" class="radio checked:bg-red-500" value="B"/>
+                      </label>
+                    </div>
+                    <div class="form-control">
+                      <label class="label cursor-pointer">
+                        <span class="label-text mr-3">C: </span>
+                        <input type="radio" name="unit_destination" class="radio checked:bg-red-500" value="C"/>
+                      </label>
+                    </div>
+                    <div class="form-control">
+                      <label class="label cursor-pointer">
+                        <span class="label-text mr-3">D: </span>
+                        <input type="radio" name="unit_destination" class="radio checked:bg-red-500" value="D"/>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="divider divider-primary"></div>
+
+                <!-- Unit Count -->
+                <input type="range" name="unit_count" min="1" max="5" value="1" class="range" step="1" />
+                <div class="flex w-full justify-between px-2 text-xs">
+                  <span>|</span>
+                  <span>|</span>
+                  <span>|</span>
+                  <span>|</span>
+                  <span>|</span>
+                </div>
+
+                <!-- Submit form -->
                 <input class="btn btn-accent" type="submit" value="Send Instructions"></input>
             </form>
           </div>
