@@ -29,7 +29,7 @@ class Player:
     #user input
     def process_user_input(self):
         pg.event.pump()
-        _, _, Mouse_R = pg.mouse.get_pressed()
+        Mouse_L, Mouse_M, Mouse_R = pg.mouse.get_pressed()
         Mouse_Pos = pg.mouse.get_pos()
 
         if Mouse_R:
