@@ -1,5 +1,5 @@
 import pygame as pg
-
+import heapq
 class Player:
 
     size = (75,75)
@@ -73,7 +73,13 @@ def read_student_input():
         f.seek(0)
         f.truncate()
 
-    
-    
-    
+
+exampleMapGraph = {(0,0): ((2,4),(4,2),(8,1)), (2,4): ((0,0), (4,2)), (4,2): ((0,0), (2,4), (9,5)), (8,1): ((0,0), (9,5)), (9,5): ((4,2), (8,1))}
+
+def pathfind(start, end):
+    openList = []
+    closedList = []
+
+    heapq.heappush(openList, (0.0, start))
+
 
