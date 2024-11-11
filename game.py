@@ -76,10 +76,20 @@ def read_student_input():
 
 exampleMapGraph = {(0,0): ((2,4),(4,2),(8,1)), (2,4): ((0,0), (4,2)), (4,2): ((0,0), (2,4), (9,5)), (8,1): ((0,0), (9,5)), (9,5): ((4,2), (8,1))}
 
-def pathfind(start, end):
-    openList = []
-    closedList = []
+def dijkstra_pathfinding(start, end):
 
-    heapq.heappush(openList, (0.0, start))
+    #check if player is already at destination
+    if start == end:
+        return []
+
+    visitableNodes = []
+    visitedNodes = {}
+
+    #each element of the priority queue contains: the distance from start node to this node, and this node's location
+    heapq.heappush(visitableNodes, (0.0, start))
+
+    while len(visitableNodes) > 0:
+        pass
+
 
 
