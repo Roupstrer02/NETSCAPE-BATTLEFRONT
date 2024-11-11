@@ -117,15 +117,9 @@ def dijkstra_pathfinding(start, end):
                     #WHEN ADDING PATHS TO THE DICT, I NEED TO KEEP TRACK OF HOW LONG THEY ARE AND NOT UPDATE THEM IF THEY'RE STRAIGHT UP WORSE
                     elif alreadyHasPath and pathsToNodes.get(elem)[1] > pathSoFar[1] + newDistance:
                         pathsToNodes[elem] = (pathSoFar[0] + [currentNode], pathSoFar[1] + newDistance)
-                    
-                    if elem == end:
-                        print(currentNode)
-                        print(pathSoFar[1], newDistance)
 
         #mark current node as no longer visitable
         visitableNodes.pop(currentNode)
-
-    #print(pathsToNodes)
 
     #returns None if no path can be found
     return pathsToNodes.get(end)
@@ -143,6 +137,11 @@ def findCheapestOption(optionsList):
             return key
 
 
-maybe = dijkstra_pathfinding((2,4), (8,1))
-print("\n\n\nanswer?:")
+
+
+#====================================================================================================================================================================================
+#Testing functions
+
+maybe = dijkstra_pathfinding((0,0), (9,5))
+print("\nShortest Path:")
 print(maybe)
