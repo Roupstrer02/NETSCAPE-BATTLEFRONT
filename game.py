@@ -1,5 +1,6 @@
 import pygame as pg
-import heapq
+from math import sqrt
+
 class Player:
 
     size = (75,75)
@@ -82,14 +83,66 @@ def dijkstra_pathfinding(start, end):
     if start == end:
         return []
 
-    visitableNodes = []
-    visitedNodes = {}
-
-    #each element of the priority queue contains: the distance from start node to this node, and this node's location
-    heapq.heappush(visitableNodes, (0.0, start))
+    visitableNodes = {start: 0.0}
+    visitedNodes = set()
+    pathsToNodes = {start: ([start], 0.0)}
 
     while len(visitableNodes) > 0:
-        pass
+        
+        #pick new node to look through
+        currentNode = findCheapestOption(visitableNodes)
+        
+        #mark this node as visited
+        visitedNodes.add(currentNode)
+        
+        #add all this node's connections to the visitable node list with their weight from currentNode
+        for elem in exampleMapGraph.get(currentNode):
+
+            pathSoFar = pathsToNodes.get(currentNode)
+            
+            if not elem in visitedNodes:
+                newDistance = sqrt((elem[0] - currentNode[0])**2 + (elem[1] - currentNode[1])**2)
+                
+                visitableNodes[elem] = newDistance
+
+                if currentNode == start:
+                    pathsToNodes[elem] = ([currentNode], newDistance)
+                
+                else:
+                    alreadyHasPath = elem in pathsToNodes.keys()
+                    
+                    if not alreadyHasPath:
+                        pathsToNodes[elem] = (pathSoFar[0] + [currentNode], pathSoFar[1] + newDistance)
+
+                    #WHEN ADDING PATHS TO THE DICT, I NEED TO KEEP TRACK OF HOW LONG THEY ARE AND NOT UPDATE THEM IF THEY'RE STRAIGHT UP WORSE
+                    elif alreadyHasPath and pathsToNodes.get(elem)[1] > pathSoFar[1] + newDistance:
+                        pathsToNodes[elem] = (pathSoFar[0] + [currentNode], pathSoFar[1] + newDistance)
+                    
+                    if elem == end:
+                        print(currentNode)
+                        print(pathSoFar[1], newDistance)
+
+        #mark current node as no longer visitable
+        visitableNodes.pop(currentNode)
+
+    #print(pathsToNodes)
+
+    #returns None if no path can be found
+    return pathsToNodes.get(end)
 
 
 
+
+
+#finds cheapest node within a list of options (formatted as: {n1: 0.0, n2: 0.0, n3: 0.0, ...})
+def findCheapestOption(optionsList):
+    cheapestCost = min(optionsList.values())
+
+    for key in optionsList.keys():
+        if optionsList.get(key) == cheapestCost:
+            return key
+
+
+maybe = dijkstra_pathfinding((2,4), (8,1))
+print("\n\n\nanswer?:")
+print(maybe)
