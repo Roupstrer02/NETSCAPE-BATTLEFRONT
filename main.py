@@ -5,7 +5,9 @@ import sys
 from threading import Thread
 from server import activate_server
 from pygame.locals import *
-import time
+import copy
+from nodes import *
+from game import *
 
 #========================================================================================================================================
 #   To do list:
@@ -50,19 +52,17 @@ player = Player(2000, 1600)
 studentArmy = []
 
 
-
 def screenToWorldCoords(screenCoord):
     return (cameraCoords[0]-(screenSize[0]/2-screenCoord[0])/zoomScale,cameraCoords[1]-(screenSize[1]/2-screenCoord[1])/zoomScale)
 
 def worldToScreenCoords(worldCoord):
     return ((worldCoord[0]-cameraCoords[0])*zoomScale+screenSize[0]/2,(worldCoord[1]-cameraCoords[1])*zoomScale+screenSize[1]/2)
 
-def read_student_input():
-    with open('student_input.txt', 'r+') as f:
-        for line in f:
-            print(line)
-        f.seek(0)
-        f.truncate()
+
+#temp
+
+
+
 
 while True:
     #Updates <-could be a better name
@@ -73,6 +73,12 @@ while True:
         if event.type == QUIT:
             pg.quit()
             sys.exit()
+    
+    
+    
+    
+    
+
     
     Mouse_Pos = pg.mouse.get_pos()
     Mouse_L, Mouse_M, Mouse_R = pg.mouse.get_pressed()
@@ -91,12 +97,15 @@ while True:
     if keys[pg.K_q] and zoomScale>0.2:
         zoomScale=zoomScale/1.04
     
-    if Mouse_R:
-        isInLosForPlayerMovement, losCollForPlayerMovement = lineOfSight(player.position,screenToWorldCoords(pg.mouse.get_pos()))
-        if isInLosForPlayerMovement:
-            player.process_user_input(screenToWorldCoords(pg.mouse.get_pos()))
-        else:
-            player.process_user_input(losCollForPlayerMovement)
+
+
+
+    if keys[pg.K_SPACE]:
+        while(keys[pg.K_SPACE]):
+            pg.event.pump()
+            keys=pg.key.get_pressed()
+        pass
+
     
 
 
@@ -112,9 +121,10 @@ while True:
     
     #pg.draw.rect(world,"red",(2120-1,1550-1,2,2))
 
-    temporaryLosBool, losContactCoord = lineOfSight(cameraCoords,screenToWorldCoords(Mouse_Pos))
+    
 
             
+
     #------------------------------------------------------------------------
 
     #Cropping (to save on ram), Zooming, and Displaying World on "screen"
@@ -126,9 +136,25 @@ while True:
     #DRAW HERE UI ELEMENTS HERE----------------------------------------------
 
     #pg.draw.rect(screen,"cyan",(0,screenSize[1]-30,screenSize[0],30))
-    if debugMode:
-        pg.draw.rect(screen,"green",(screenSize[0]/2-5,screenSize[1]/2-5,10,10))
-        pg.draw.line(screen,"purple",(screenSize[0]/2,screenSize[1]/2),(Mouse_Pos))
+    
+    for currNode in list(pathfindingNetwork.keys()):
+        pg.draw.circle(screen, (200, 200, 200), worldToScreenCoords(currNode), 6)
+        for targetNode in pathfindingNetwork[currNode]:
+            pg.draw.aaline(screen, (200, 200, 200),worldToScreenCoords(currNode),worldToScreenCoords(targetNode))
+
+
+    path = generatePath(cameraCoords,screenToWorldCoords(Mouse_Pos))
+    
+    if path != None:
+        waypoints = path[0]
+        pg.draw.circle(screen,"red", worldToScreenCoords(cameraCoords), 6)
+        pg.draw.aaline(screen,"red", worldToScreenCoords(cameraCoords), worldToScreenCoords(waypoints[-1]))
+        
+        for node in waypoints:
+            pg.draw.circle(screen,"red", worldToScreenCoords(node), 6)
+        for i in range(len(waypoints)-1):
+            pg.draw.aaline(screen,"red", worldToScreenCoords(waypoints[i]), worldToScreenCoords(waypoints[i+1]))
+
 
     #------------------------------------------------------------------------
 
