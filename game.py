@@ -4,7 +4,6 @@ from nodes import *
 from math import sqrt
 import copy
 
-
 #init declarations
 pg.init()
 screenSize = (1200,800)
@@ -46,10 +45,6 @@ def screenToWorldCoords(screenCoord):
 
 def worldToScreenCoords(worldCoord):
     return ((worldCoord[0]-cameraCoords[0])*zoomScale+screenSize[0]/2,(worldCoord[1]-cameraCoords[1])*zoomScale+screenSize[1]/2)
-
-
-
-
 
 
 class Player:
@@ -143,6 +138,82 @@ class Player:
         pass
 
 
+#Creating the instance of the player so that it can be used inside of Invader.checkForAggro()
+player = Player(2000, 1600)
+
+class Invader:
+    size = (1,1)
+
+    health = 1
+    damage = 1
+    
+
+    speed = 1
+    aggro_range = 1
+
+    attacking_player = False
+
+    #lists waypoint vectors where the entity moves towards the first element of the list at all times
+    PermanentTargetDestination = (0,0)
+    path = []
+
+    def __init__(self, invaderType, spawnLoc, destinationLoc):
+        self.position = pg.Vector2(spawnLoc[0], spawnLoc[1])
+        self.PermanentTargetDestination = destinationLoc
+        self.path = generatePath(self.PermanentTargetDestination, self.position)
+        print(self.path)
+
+        #change the unit's stats, range, etc. based on invaderType ("zergling", "roach", "hydralisk", "ultralisk", etc.)
+        if invaderType == "Zergling":
+            self.health = 10
+            self.damage = 2
+            self.size = (10,10)
+        
+        self.hitbox = pg.Rect(0,0,self.size[0],self.size[1])
+        self.hitbox.center = (spawnLoc[0], spawnLoc[1])
+
+    #All Invaders still need to:
+    # be able to target player when nearby and chase them
+
+    def draw(self, surface):
+        pg.draw.ellipse(surface, "red", self.hitbox)
+
+    #retargets the path to go towards the player if they're in LOS and within aggro range
+    def checkForAggro(self):
+        LOS, _ = lineOfSight()
+
+        if LOS and (player.position - self.position).magnitude < self.aggro_range:
+            self.path = [player.position]
+            self.attacking_player = True
+        elif self.attacking_player == True and not LOS:
+
+            #In this case, Invaders won't retarget to the nearest objective, and will go to the original one they were given instead
+            self.path = generatePath(self.PermanentTargetDestination, self.position)
+            self.attacking_player = False
+
+    def move(self):
+        if not len(self.path) == 0:
+            remainingPathSegment = pg.Vector2(self.path[0][0] - self.position[0], self.path[0][1] - self.position[1])
+            if not self.path[0] == self.position:
+                direction = pg.Vector2(self.path[0][0] - self.position[0], self.path[0][1] - self.position[1]).normalize()
+                
+            else:
+                direction = pg.Vector2((0,0))
+
+            #this if/else stops jittering when arriving at any waypoint
+            if (remainingPathSegment.magnitude() > self.speed):
+                self.position += self.speed * direction
+            else:
+                self.position = self.path[0]
+
+
+                #remove completed waypoint from path
+                del self.path[0]
+            self.hitbox.center = (round(self.position[0]), round(self.position[1]))
+
+    def update(self):
+        self.checkForAggro()
+        self.move()
 
 #player declaration
 player = Player(2000, 1600)#Player Starting POS
@@ -222,6 +293,7 @@ def read_student_input():
             invadersOnMap.append(Invader(spawninfo[0], controlPointLocations[spawninfo[1]], controlPointLocations[spawninfo[2]]))
         f.seek(0)
         f.truncate()
+
 
 
 # WARNING!!!!!!   Line indicated below can not detect wall when target and origin are horizontal
@@ -425,4 +497,4 @@ def generatePath(target, origin):
     ###############
     final_path = dijkstra_pathfinding(origin, target, workingPathfindingNetwork)
     final_path[0].append(target)
-    return final_path
+    return final_path[0]

@@ -38,12 +38,6 @@ while True:
     player.process_user_input()
     
     player.updatePlayerCamera()
-    
-    
-    
-    
-
-    
 
     
 
