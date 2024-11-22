@@ -7,6 +7,7 @@ from server import activate_server
 from pygame.locals import *
 import copy
 from nodes import *
+from game import controlPointLocations
 from game import *
 
 #========================================================================================================================================
@@ -73,11 +74,9 @@ while True:
         if event.type == QUIT:
             pg.quit()
             sys.exit()
-    
-    
-    
-    
-    
+
+
+
 
     
     Mouse_Pos = pg.mouse.get_pos()
@@ -98,8 +97,6 @@ while True:
         zoomScale=zoomScale/1.04
     
 
-
-
     if keys[pg.K_SPACE]:
         while(keys[pg.K_SPACE]):
             pg.event.pump()
@@ -108,13 +105,14 @@ while True:
 
     
 
-
     #Drawing World Map
     world.blit(worldMap, (0,0))
 
     #DRAW HERE WORLD ELEMENTS HERE-------------------------------------------
     player.draw(world)
-
+    for invader in invadersOnMap:
+        invader.update()
+        invader.draw(world)
 
     #player update
     player.update()
@@ -137,23 +135,23 @@ while True:
 
     #pg.draw.rect(screen,"cyan",(0,screenSize[1]-30,screenSize[0],30))
     
-    for currNode in list(pathfindingNetwork.keys()):
-        pg.draw.circle(screen, (200, 200, 200), worldToScreenCoords(currNode), 6)
-        for targetNode in pathfindingNetwork[currNode]:
-            pg.draw.aaline(screen, (200, 200, 200),worldToScreenCoords(currNode),worldToScreenCoords(targetNode))
+    # for currNode in list(pathfindingNetwork.keys()):
+    #     pg.draw.circle(screen, (200, 200, 200), worldToScreenCoords(currNode), 6)
+    #     for targetNode in pathfindingNetwork[currNode]:
+    #         pg.draw.aaline(screen, (200, 200, 200),worldToScreenCoords(currNode),worldToScreenCoords(targetNode))
 
 
-    path = generatePath(cameraCoords,screenToWorldCoords(Mouse_Pos))
+    # path = generatePath(cameraCoords,screenToWorldCoords(Mouse_Pos))
     
-    if path != None:
-        waypoints = path[0]
-        pg.draw.circle(screen,"red", worldToScreenCoords(cameraCoords), 6)
-        pg.draw.aaline(screen,"red", worldToScreenCoords(cameraCoords), worldToScreenCoords(waypoints[-1]))
+    # if path != None:
+    #     waypoints = path[0]
+    #     pg.draw.circle(screen,"red", worldToScreenCoords(cameraCoords), 6)
+    #     pg.draw.aaline(screen,"red", worldToScreenCoords(cameraCoords), worldToScreenCoords(waypoints[-1]))
         
-        for node in waypoints:
-            pg.draw.circle(screen,"red", worldToScreenCoords(node), 6)
-        for i in range(len(waypoints)-1):
-            pg.draw.aaline(screen,"red", worldToScreenCoords(waypoints[i]), worldToScreenCoords(waypoints[i+1]))
+    #     for node in waypoints:
+    #         pg.draw.circle(screen,"red", worldToScreenCoords(node), 6)
+    #     for i in range(len(waypoints)-1):
+    #         pg.draw.aaline(screen,"red", worldToScreenCoords(waypoints[i]), worldToScreenCoords(waypoints[i+1]))
 
 
     #------------------------------------------------------------------------

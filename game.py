@@ -4,6 +4,8 @@ from nodes import *
 from math import sqrt
 import copy
 
+controlPointLocations = {"PLAYERBASE": (1990, 1625), "INVADERBASE": (3040, 1090), "CONTESTEDPOINT_A": (2300, 1130), "CONTESTEDPOINT_B": (2860, 1490)}
+invadersOnMap = []
 class Player:
 
     size = (15,15)
@@ -65,15 +67,74 @@ class Player:
                 del self.path[0]
             self.hitbox.center = (round(self.position[0]), round(self.position[1]))
 
+class Invader:
+    size = (1,1)
+
+    health = 1
+    damage = 1
+    
+
+    speed = 1
+    aggro_range = 1
+
+    #lists waypoint vectors where the entity moves towards the first element of the list at all times
+    PermanentTargetDestination = (0,0)
+    path = []
+
+    def __init__(self, invaderType, spawnLoc, destinationLoc):
+        self.position = pg.Vector2(spawnLoc[0], spawnLoc[1])
+        self.PermanentTargetDestination = destinationLoc
+        self.path = generatePath(self.PermanentTargetDestination, self.position)[0]
+        print(self.path)
+
+        #change the unit's stats, range, etc. based on invaderType ("zergling", "roach", "hydralisk", "ultralisk", etc.)
+        if invaderType == "Zergling":
+            self.health = 10
+            self.damage = 2
+            self.size = (10,10)
+        
+        self.hitbox = pg.Rect(0,0,self.size[0],self.size[1])
+        self.hitbox.center = (spawnLoc[0], spawnLoc[1])
+
+    #All Invaders still need to:
+    # be able to target player when nearby and chase them
+
+    def draw(self, surface):
+        pg.draw.ellipse(surface, "red", self.hitbox)
+
+    def checkForAggro(self):
+        pass
+
+    def move(self):
+        if not len(self.path) == 0:
+            remainingPathSegment = pg.Vector2(self.path[0][0] - self.position[0], self.path[0][1] - self.position[1])
+            if not self.path[0] == self.position:
+                direction = pg.Vector2(self.path[0][0] - self.position[0], self.path[0][1] - self.position[1]).normalize()
+                
+            else:
+                direction = pg.Vector2((0,0))
+
+            #this if/else stops jittering when arriving at any waypoint
+            if (remainingPathSegment.magnitude() > self.speed):
+                self.position += self.speed * direction
+            else:
+                self.position = self.path[0]
+
+
+                #remove completed waypoint from path
+                del self.path[0]
+            self.hitbox.center = (round(self.position[0]), round(self.position[1]))
+
+    def update(self):
+        self.move()
 
 def read_student_input():
     with open('student_input.txt', 'r+') as f:
         for line in f:
-            print(line)
+            spawninfo = line.split(' ')
+            invadersOnMap.append(Invader(spawninfo[0], controlPointLocations[spawninfo[1]], controlPointLocations[spawninfo[2]]))
         f.seek(0)
         f.truncate()
-
-
 
 allWallEdgesMatrix = np.array(allWallEdgesList)
 allWallEdgeMatrixMathPreCalcA = np.subtract(allWallEdgesMatrix[1,:,0],allWallEdgesMatrix[0,:,0])
@@ -108,8 +169,6 @@ def lineOfSight(origin,target):
         #vv Bool of if in LOS        v Coords if in LOS
     return isAnyInLineOfSignt , contactCoord #, indexOfHitWall 
 
-
-
 #finds cheapest node within a list of options (formatted as: {n1: 0.0, n2: 0.0, n3: 0.0, ...})
 def findCheapestOption(optionsList):
     cheapestCost = min(optionsList.values())
@@ -117,9 +176,6 @@ def findCheapestOption(optionsList):
     for key in optionsList.keys():
         if optionsList.get(key) == cheapestCost:
             return key
-
-
-
 
 def dijkstra_pathfinding(start, end, mapGraph):
 
@@ -170,10 +226,6 @@ def dijkstra_pathfinding(start, end, mapGraph):
 
     #returns None if no path can be found
     return pathsToNodes.get(end)
-
-
-
-
 
 #this function can take any coords as inputs
 def generatePath(target, origin):
@@ -288,11 +340,6 @@ def generatePath(target, origin):
     ###############
     #STEP2: RUN DIJKSTRA ON THE NEW NETWORK
     ###############
-
-    return dijkstra_pathfinding(origin, target, workingPathfindingNetwork)
-
-
-
-    
-
-
+    final_path = dijkstra_pathfinding(origin, target, workingPathfindingNetwork)
+    final_path[0].append(target)
+    return final_path
