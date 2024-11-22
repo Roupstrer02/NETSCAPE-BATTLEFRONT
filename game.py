@@ -106,7 +106,7 @@ class Player:
     
     def pathfind(self):
         if self.Mouse_R:
-            self.path = generatePath(self.World_Mouse_Pos,self.position)[0]
+            self.path = generatePath(self.position, self.World_Mouse_Pos)
         return self.path
 
     def updatePos(self):
@@ -122,7 +122,7 @@ class Player:
             if (remainingPathSegment.magnitude() > self.speed):
                 self.position += self.speed * direction
             else:
-                self.position = self.path[0]
+                self.position = pg.Vector2(self.path[0])
 
 
                 #remove completed waypoint from path
@@ -149,7 +149,7 @@ class Invader:
     
 
     speed = 1
-    aggro_range = 1
+    aggro_range = 400
 
     attacking_player = False
 
@@ -160,7 +160,7 @@ class Invader:
     def __init__(self, invaderType, spawnLoc, destinationLoc):
         self.position = pg.Vector2(spawnLoc[0], spawnLoc[1])
         self.PermanentTargetDestination = destinationLoc
-        self.path = generatePath(self.PermanentTargetDestination, self.position)
+        self.path = generatePath(self.position, self.PermanentTargetDestination)
         print(self.path)
 
         #change the unit's stats, range, etc. based on invaderType ("zergling", "roach", "hydralisk", "ultralisk", etc.)
@@ -180,15 +180,15 @@ class Invader:
 
     #retargets the path to go towards the player if they're in LOS and within aggro range
     def checkForAggro(self):
-        LOS, _ = lineOfSight()
+        LOS, _ = lineOfSight(self.position, player.position)
 
-        if LOS and (player.position - self.position).magnitude < self.aggro_range:
+        if LOS and (player.position - self.position).magnitude() < self.aggro_range:
             self.path = [player.position]
             self.attacking_player = True
         elif self.attacking_player == True and not LOS:
 
             #In this case, Invaders won't retarget to the nearest objective, and will go to the original one they were given instead
-            self.path = generatePath(self.PermanentTargetDestination, self.position)
+            self.path = generatePath(self.position, self.PermanentTargetDestination)
             self.attacking_player = False
 
     def move(self):
@@ -204,83 +204,12 @@ class Invader:
             if (remainingPathSegment.magnitude() > self.speed):
                 self.position += self.speed * direction
             else:
-                self.position = self.path[0]
+                self.position = pg.Vector2(self.path[0])
 
 
                 #remove completed waypoint from path
                 del self.path[0]
             self.hitbox.center = (round(self.position[0]), round(self.position[1]))
-
-    def update(self):
-        self.checkForAggro()
-        self.move()
-
-#player declaration
-player = Player(2000, 1600)#Player Starting POS
-
-
-
-#Creating the instance of the player so that it can be used inside of Invader.checkForAggro()
-player = Player(2000, 1600)
-
-class Invader:
-    size = (1,1)
-
-    health = 1
-    damage = 1
-    
-
-    speed = 1
-    aggro_range = 1
-
-    #lists waypoint vectors where the entity moves towards the first element of the list at all times
-    PermanentTargetDestination = (0,0)
-    path = []
-
-    def __init__(self, invaderType, spawnLoc, destinationLoc):
-        self.position = pg.Vector2(spawnLoc[0], spawnLoc[1])
-        self.PermanentTargetDestination = destinationLoc
-        self.path = generatePath(self.PermanentTargetDestination, self.position)[0]
-        print(self.path)
-
-        #change the unit's stats, range, etc. based on invaderType ("zergling", "roach", "hydralisk", "ultralisk", etc.)
-        if invaderType == "Zergling":
-            self.health = 10
-            self.damage = 2
-            self.size = (10,10)
-        
-        self.hitbox = pg.Rect(0,0,self.size[0],self.size[1])
-        self.hitbox.center = (spawnLoc[0], spawnLoc[1])
-
-    #All Invaders still need to:
-    # be able to target player when nearby and chase them
-
-    def draw(self, surface):
-        pg.draw.rect(surface, "red", self.hitbox)
-        pg.draw.circle(surface, "cyan", self.position,1)
-        
-    def checkForAggro(self):
-        pass
-
-    def move(self):
-        if not len(self.path) == 0:
-            remainingPathSegment = pg.Vector2(self.path[0][0] - self.position[0], self.path[0][1] - self.position[1])
-            if not self.path[0] == self.position:
-                direction = pg.Vector2(self.path[0][0] - self.position[0], self.path[0][1] - self.position[1]).normalize()
-                
-            else:
-                direction = pg.Vector2((0,0))
-
-            #this if/else stops jittering when arriving at any waypoint
-            if (remainingPathSegment.magnitude() > self.speed):
-                self.position += self.speed * direction
-            else:
-                self.position = self.path[0]
-
-
-                #remove completed waypoint from path
-                del self.path[0]
-            self.hitbox.center = (round(self.position[0]), round(self.position[1])-self.size[1]/2)
 
     def update(self):
         self.checkForAggro()
@@ -383,20 +312,20 @@ def dijkstra_pathfinding(start, end, mapGraph):
     return pathsToNodes.get(end)
 
 #this function can take any coords as inputs
-def generatePath(target, origin):
+def generatePath(origin, target):
     
     origin=tuple(origin)
     target=tuple(target)
     
     if origin == target:
-        return ([origin, target], 0) ##############MAKE SURE THIS IS THE SAME STRUCTURS AS THE OTHER RETURN
+        return [origin, target]##############MAKE SURE THIS IS THE SAME STRUCTURS AS THE OTHER RETURN
 
     ###############
     #STEP0: IF ORIGIN AND TARGET ARE IN LOS, RETURN THEM
     ###############
     isInLos, _ = lineOfSight(origin,target)
     if isInLos:
-        return ([origin, target], sqrt( (target[0]-origin[0])*(target[0]-origin[0]) + (target[1]-origin[1])*(target[1]-origin[1]) )) ##############MAKE SURE THIS IS THE SAME STRUCTURS AS THE OTHER RETURN
+        return [origin, target] ##############MAKE SURE THIS IS THE SAME STRUCTURS AS THE OTHER RETURN
 
     ###############
     #STEP1: ADD ORIGIN AND TARGET TO THE PATHFINGING NETWORK
@@ -496,5 +425,9 @@ def generatePath(target, origin):
     #STEP2: RUN DIJKSTRA ON THE NEW NETWORK
     ###############
     final_path = dijkstra_pathfinding(origin, target, workingPathfindingNetwork)
-    final_path[0].append(target)
-    return final_path[0]
+
+    if not final_path == None: 
+        final_path[0].append(target)
+        return final_path[0]
+    else:
+        return []
