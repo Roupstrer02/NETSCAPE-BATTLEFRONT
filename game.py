@@ -299,13 +299,16 @@ def dijkstra_pathfinding(start, end, mapGraph):
                 
                 else:
                     alreadyHasPath = elem in pathsToNodes.keys()
-                    
+
+                    #remaining **euclidian** distance to target (heuristics) 
+                    distance_to_end = sqrt((end[0] - elem[0])**2 + (end[1] - elem[1])**2)
                     if not alreadyHasPath:
-                        pathsToNodes[elem] = (pathSoFar[0] + [currentNode], pathSoFar[1] + newDistance)
+                                                                                                        #Adding this distance turns this alg into a weird version of A* really...
+                        pathsToNodes[elem] = (pathSoFar[0] + [currentNode], pathSoFar[1] + newDistance + distance_to_end)
 
                     #WHEN ADDING PATHS TO THE DICT, I NEED TO KEEP TRACK OF HOW LONG THEY ARE AND NOT UPDATE THEM IF THEY'RE STRAIGHT UP WORSE
                     elif alreadyHasPath and pathsToNodes.get(elem)[1] > pathSoFar[1] + newDistance:
-                        pathsToNodes[elem] = (pathSoFar[0] + [currentNode], pathSoFar[1] + newDistance)
+                        pathsToNodes[elem] = (pathSoFar[0] + [currentNode], pathSoFar[1] + newDistance + distance_to_end)
 
         #mark current node as no longer visitable
         visitableNodes.pop(currentNode)
