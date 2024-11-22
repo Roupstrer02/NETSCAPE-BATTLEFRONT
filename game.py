@@ -6,6 +6,11 @@ import copy
 
 controlPointLocations = {"PLAYERBASE": (1990, 1625), "INVADERBASE": (3040, 1090), "CONTESTEDPOINT_A": (2300, 1130), "CONTESTEDPOINT_B": (2860, 1490)}
 invadersOnMap = []
+allWallEdgesMatrix = np.array(allWallEdgesList)
+allWallEdgeMatrixMathPreCalcA = np.subtract(allWallEdgesMatrix[1,:,0],allWallEdgesMatrix[0,:,0])
+allWallEdgeMatrixMathPreCalcB = np.subtract(np.multiply(allWallEdgesMatrix[0,:,1],allWallEdgesMatrix[1,:,0]),np.multiply(allWallEdgesMatrix[1,:,1],allWallEdgesMatrix[0,:,0]))
+allWallEdgeMatrixMathPreCalcC = np.subtract(allWallEdgesMatrix[1,:,1],allWallEdgesMatrix[0,:,1])
+
 class Player:
 
     size = (15,15)
@@ -67,6 +72,9 @@ class Player:
                 del self.path[0]
             self.hitbox.center = (round(self.position[0]), round(self.position[1]))
 
+#Creating the instance of the player so that it can be used inside of Invader.checkForAggro()
+player = Player(2000, 1600)
+
 class Invader:
     size = (1,1)
 
@@ -126,6 +134,7 @@ class Invader:
             self.hitbox.center = (round(self.position[0]), round(self.position[1]))
 
     def update(self):
+        self.checkForAggro()
         self.move()
 
 def read_student_input():
@@ -136,10 +145,6 @@ def read_student_input():
         f.seek(0)
         f.truncate()
 
-allWallEdgesMatrix = np.array(allWallEdgesList)
-allWallEdgeMatrixMathPreCalcA = np.subtract(allWallEdgesMatrix[1,:,0],allWallEdgesMatrix[0,:,0])
-allWallEdgeMatrixMathPreCalcB = np.subtract(np.multiply(allWallEdgesMatrix[0,:,1],allWallEdgesMatrix[1,:,0]),np.multiply(allWallEdgesMatrix[1,:,1],allWallEdgesMatrix[0,:,0]))
-allWallEdgeMatrixMathPreCalcC = np.subtract(allWallEdgesMatrix[1,:,1],allWallEdgesMatrix[0,:,1])
 
 # WARNING!!!!!!   Line indicated below can not detect wall when target and origin are horizontal
 #                    v v both are (x,y)

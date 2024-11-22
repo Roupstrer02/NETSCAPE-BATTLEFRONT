@@ -1,11 +1,9 @@
 from game import *
 import pygame as pg
-import numpy as np
 import sys
 from threading import Thread
 from server import activate_server
 from pygame.locals import *
-import copy
 from nodes import *
 from game import controlPointLocations
 from game import *
@@ -46,9 +44,6 @@ startingZoomScale = 1#<--------------------Change Starting Zoom Scale Here
 cameraCoords = startingCameraWorldCoords
 zoomScale = startingZoomScale
 
-#player declaration
-player = Player(2000, 1600)
-
 #student army declaration
 studentArmy = []
 
@@ -58,11 +53,6 @@ def screenToWorldCoords(screenCoord):
 
 def worldToScreenCoords(worldCoord):
     return ((worldCoord[0]-cameraCoords[0])*zoomScale+screenSize[0]/2,(worldCoord[1]-cameraCoords[1])*zoomScale+screenSize[1]/2)
-
-
-#temp
-
-
 
 
 while True:
