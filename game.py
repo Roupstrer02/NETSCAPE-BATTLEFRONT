@@ -83,7 +83,7 @@ class Player:
     
 
     def updatePlayerCamera(self):
-        global zoomScale
+        global zoomScale, cameraCoords
         
         if self.keys[pg.K_a]:
             cameraCoords[0]-=10/zoomScale
@@ -99,6 +99,8 @@ class Player:
         if self.keys[pg.K_q] and zoomScale>0.2:
             zoomScale=zoomScale/1.04
 
+        if self.keys[pg.K_SPACE]:
+            cameraCoords = self.position
         
         # if self.keys[pg.K_SPACE]:
         #     while(keys[pg.K_SPACE]):
@@ -106,21 +108,23 @@ class Player:
         #         keys=pg.key.get_pressed()
         #     pass
 
-    #will simply target location, unless in wall, will target nearest possible location
+    
     def pathfind(self):
+        if self.Mouse_R:
+            self.path = generatePath(self.World_Mouse_Pos,self.position)[0]
+        return self.path
 
-        #if i'm going to put in proper pathfinding, it would go here
-        return [self.target]
-
-    def update(self):
-        if not len(self.path) == 0:
+    def updatePos(self):
+       if not len(self.path) == 0:
+            remainingPathSegment = pg.Vector2(self.path[0][0] - self.position[0], self.path[0][1] - self.position[1])
             if not self.path[0] == self.position:
                 direction = pg.Vector2(self.path[0][0] - self.position[0], self.path[0][1] - self.position[1]).normalize()
+                
             else:
                 direction = pg.Vector2((0,0))
 
             #this if/else stops jittering when arriving at any waypoint
-            if ((self.path[0] - self.position).magnitude() > self.speed):
+            if (remainingPathSegment.magnitude() > self.speed):
                 self.position += self.speed * direction
             else:
                 self.position = self.path[0]
@@ -128,11 +132,16 @@ class Player:
 
                 #remove completed waypoint from path
                 del self.path[0]
-            self.hitbox.center = (round(self.position[0]), round(self.position[1]))
+            self.hitbox.center = (round(self.position[0]), round(self.position[1])-self.size[1]/2)
     
-    def draw(self, surface):
-        pg.draw.rect(surface, "cyan", self.hitbox)
-        pg.draw.circle(surface, "red", self.position,1)
+    def drawOnWorld(self):
+        pg.draw.rect(world, "cyan", self.hitbox)
+        pg.draw.circle(world, "red", self.position,1)
+    
+    def drawOnScreen(self):
+        
+        pass
+
 
 
 #player declaration
@@ -176,8 +185,9 @@ class Invader:
     # be able to target player when nearby and chase them
 
     def draw(self, surface):
-        pg.draw.ellipse(surface, "red", self.hitbox)
-
+        pg.draw.rect(surface, "red", self.hitbox)
+        pg.draw.circle(surface, "cyan", self.position,1)
+        
     def checkForAggro(self):
         pass
 
@@ -199,7 +209,7 @@ class Invader:
 
                 #remove completed waypoint from path
                 del self.path[0]
-            self.hitbox.center = (round(self.position[0]), round(self.position[1]))
+            self.hitbox.center = (round(self.position[0]), round(self.position[1])-self.size[1]/2)
 
     def update(self):
         self.checkForAggro()

@@ -51,13 +51,16 @@ while True:
     world.blit(worldMap, (0,0))
 
     #DRAW HERE WORLD ELEMENTS HERE-------------------------------------------
-    player.draw(world)
+    
+    player.drawOnWorld()
+    
     for invader in invadersOnMap:
         invader.update()
         invader.draw(world)
 
     #player update
-    player.update()
+    player.pathfind()
+    player.updatePos()
     
     #pg.draw.rect(world,"red",(2120-1,1550-1,2,2))
 
@@ -71,26 +74,18 @@ while True:
     cropWorldView()
 
     #DRAW HERE UI ELEMENTS HERE----------------------------------------------
-
-    #pg.draw.rect(screen,"cyan",(0,screenSize[1]-30,screenSize[0],30))
+    player.drawOnWorld()
     
-    # for currNode in list(pathfindingNetwork.keys()):
-    #     pg.draw.circle(screen, (200, 200, 200), worldToScreenCoords(currNode), 6)
-    #     for targetNode in pathfindingNetwork[currNode]:
-    #         pg.draw.aaline(screen, (200, 200, 200),worldToScreenCoords(currNode),worldToScreenCoords(targetNode))
-
-
-    # path = generatePath(cameraCoords,screenToWorldCoords(Mouse_Pos))
     
-    # if path != None:
-    #     waypoints = path[0]
-    #     pg.draw.circle(screen,"red", worldToScreenCoords(cameraCoords), 6)
-    #     pg.draw.aaline(screen,"red", worldToScreenCoords(cameraCoords), worldToScreenCoords(waypoints[-1]))
-        
-    #     for node in waypoints:
-    #         pg.draw.circle(screen,"red", worldToScreenCoords(node), 6)
-    #     for i in range(len(waypoints)-1):
-    #         pg.draw.aaline(screen,"red", worldToScreenCoords(waypoints[i]), worldToScreenCoords(waypoints[i+1]))
+    #TEMP: MOVE TO DEBUG MODE
+    if player.path != []:
+            waypoints = player.path
+            pg.draw.aaline(screen,"red", worldToScreenCoords(player.position), worldToScreenCoords(waypoints[0]))
+
+            for node in waypoints:
+                pg.draw.circle(screen,"red", worldToScreenCoords(node), 6)
+            for i in range(len(waypoints)-1):
+                pg.draw.aaline(screen,"red", worldToScreenCoords(waypoints[i]), worldToScreenCoords(waypoints[i+1]))
 
 
     #------------------------------------------------------------------------
