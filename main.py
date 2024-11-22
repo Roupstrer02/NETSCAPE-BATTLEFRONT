@@ -1,11 +1,9 @@
 from game import *
 import pygame as pg
-import numpy as np
 import sys
 from threading import Thread
 from server import activate_server
 from pygame.locals import *
-import copy
 from nodes import *
 from game import controlPointLocations
 from game import *
@@ -23,7 +21,6 @@ debugMode = False
 #start up local server
 game_server = Thread(target=activate_server)
 game_server.start()
-
 
 
 
