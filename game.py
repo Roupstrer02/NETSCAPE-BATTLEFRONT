@@ -4,6 +4,9 @@ from nodes import *
 from math import sqrt
 import copy
 
+#FIX THE DAMN PATHFINDING SO THAT IT'S CONSISTENT
+
+
 #init declarations
 pg.init()
 screenSize = (1200,800)
@@ -161,7 +164,6 @@ class Invader:
         self.position = pg.Vector2(spawnLoc[0], spawnLoc[1])
         self.PermanentTargetDestination = destinationLoc
         self.path = generatePath(self.position, self.PermanentTargetDestination)
-        print(self.path)
 
         #change the unit's stats, range, etc. based on invaderType ("zergling", "roach", "hydralisk", "ultralisk", etc.)
         if invaderType == "Zergling":
