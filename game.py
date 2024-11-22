@@ -4,45 +4,103 @@ from nodes import *
 from math import sqrt
 import copy
 
+
+#init declarations
+pg.init()
+screenSize = (1200,800)
+clock = pg.time.Clock()
+screen = pg.display.set_mode(screenSize)
+pg.display.set_caption('NETSCAPE: BATTLEFRONT')
+fpsClock = pg.time.Clock()
 controlPointLocations = {"PLAYERBASE": (1990, 1625), "INVADERBASE": (3040, 1090), "CONTESTEDPOINT_A": (2300, 1130), "CONTESTEDPOINT_B": (2860, 1490)}
+
 invadersOnMap = []
+
+
+
+#Loading Map Image, some Surface inits
+worldMap = pg.image.load("Map - Iso.png").convert()
+worldCroppedScaled=pg.Surface(screenSize)
+world=pg.Surface((5080,2660))#size of the PNG must never change
+
+
+#Params
+startingCameraWorldCoords = [2540,1340]#<--Change Starting Camera Coords Here
+startingZoomScale = 1#<--------------------Change Starting Zoom Scale Here
+
+cameraCoords = startingCameraWorldCoords
+zoomScale = startingZoomScale
+
+def cropWorldView():
+    worldCropped=pg.Surface((screenSize[0]/zoomScale,screenSize[1]/zoomScale))
+    worldCropped.blit(world,(0,0),((cameraCoords[0])-screenSize[0]/(2*zoomScale),(cameraCoords[1])-screenSize[1]/(2*zoomScale),screenSize[0]/zoomScale,screenSize[1]/zoomScale))
+    worldCroppedScaled = pg.transform.scale(worldCropped,screenSize)#can use smoothscale under certain zoomScale value
+    screen.blit(worldCroppedScaled, (0,0))
+
+def screenToWorldCoords(screenCoord):
+    return (cameraCoords[0]-(screenSize[0]/2-screenCoord[0])/zoomScale,cameraCoords[1]-(screenSize[1]/2-screenCoord[1])/zoomScale)
+
+def worldToScreenCoords(worldCoord):
+    return ((worldCoord[0]-cameraCoords[0])*zoomScale+screenSize[0]/2,(worldCoord[1]-cameraCoords[1])*zoomScale+screenSize[1]/2)
+
+
+
+
+
 class Player:
 
-    size = (15,15)
-    reticlesize = (3, 3)
-
-    health = 100
-    damage = 20
+    size = (10,20)
     speed = 1
 
     #lists waypoint vectors where the player moves towards the first element of the list at all times
     path = []
     
     def __init__(self, x, y):
-        self.hitbox = pg.Rect(x, y, self.size[0], self.size[1])
-        self.reticle = pg.Rect(x, y, self.reticlesize[0], self.reticlesize[1])
-        
         #we store position separately
-        self.position = pg.Vector2(self.hitbox.center)
-        self.target = pg.Vector2(self.hitbox.center)
-
-    def draw(self, surface):
-        pg.draw.ellipse(surface, "cyan", self.hitbox)
-
-        if not self.reticle.colliderect(self.hitbox):
-            pg.draw.ellipse(surface, "darkred", self.reticle)
+        self.position = pg.Vector2(x,y)
+        
+        self.hitbox = pg.Rect(x-self.size[0]/2, y-self.size[1], self.size[0], self.size[1])
+        
+        pg.event.pump()
+        self.Screen_Mouse_Pos = pg.mouse.get_pos()
+        self.World_Mouse_Pos = screenToWorldCoords(self.Screen_Mouse_Pos)
+        self.Mouse_L, self.Mouse_M, self.Mouse_R = pg.mouse.get_pressed()
+        self.keys=pg.key.get_pressed()
 
     #user input
-    def process_user_input(self, mouse_screen_coords):
-        pg.event.pump()
-        Mouse_L, Mouse_M, Mouse_R = pg.mouse.get_pressed()
+    def process_user_input(self):
         
-
-        if Mouse_R:
-            self.target = pg.Vector2(mouse_screen_coords)
-            self.reticle.center = mouse_screen_coords
-            self.path = self.pathfind()
+        pg.event.pump()
+        self.Screen_Mouse_Pos = pg.mouse.get_pos()
+        self.World_Mouse_Pos = screenToWorldCoords(self.Screen_Mouse_Pos)
+        self.Mouse_L, self.Mouse_M, self.Mouse_R = pg.mouse.get_pressed()
+        self.keys=pg.key.get_pressed()
     
+
+    def updatePlayerCamera(self):
+        global zoomScale
+        
+        if self.keys[pg.K_a]:
+            cameraCoords[0]-=10/zoomScale
+        if self.keys[pg.K_d]:
+            cameraCoords[0]+=10/zoomScale
+        if self.keys[pg.K_w]:
+            cameraCoords[1]-=10/zoomScale
+        if self.keys[pg.K_s]:
+            cameraCoords[1]+=10/zoomScale
+
+        if self.keys[pg.K_e] and zoomScale<14:
+            zoomScale=zoomScale*1.04 
+        if self.keys[pg.K_q] and zoomScale>0.2:
+            zoomScale=zoomScale/1.04
+
+        
+        # if self.keys[pg.K_SPACE]:
+        #     while(keys[pg.K_SPACE]):
+        #         pg.event.pump()
+        #         keys=pg.key.get_pressed()
+        #     pass
+
     #will simply target location, unless in wall, will target nearest possible location
     def pathfind(self):
 
@@ -66,6 +124,16 @@ class Player:
                 #remove completed waypoint from path
                 del self.path[0]
             self.hitbox.center = (round(self.position[0]), round(self.position[1]))
+    
+    def draw(self, surface):
+        pg.draw.rect(surface, "cyan", self.hitbox)
+        pg.draw.circle(surface, "red", self.position,1)
+
+
+#player declaration
+player = Player(2000, 1600)#Player Starting POS
+
+
 
 class Invader:
     size = (1,1)
