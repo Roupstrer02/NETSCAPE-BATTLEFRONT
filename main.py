@@ -45,6 +45,7 @@ while True:
     world.blit(worldMap, (0,0))
 
     #DRAW HERE WORLD ELEMENTS HERE-------------------------------------------
+    drawControlPoints()
     
     player.drawOnWorld()
     

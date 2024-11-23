@@ -1,7 +1,7 @@
 import pygame as pg
 import numpy as np
 from nodes import *
-from math import sqrt
+from math import sqrt, cos, radians
 import copy
 
 #FIX THE DAMN PATHFINDING SO THAT IT'S CONSISTENT
@@ -14,7 +14,8 @@ clock = pg.time.Clock()
 screen = pg.display.set_mode(screenSize)
 pg.display.set_caption('NETSCAPE: BATTLEFRONT')
 fpsClock = pg.time.Clock()
-controlPointLocations = {"PLAYERBASE": (1990, 1625), "INVADERBASE": (3040, 1090), "CONTESTEDPOINT_A": (2300, 1130), "CONTESTEDPOINT_B": (2860, 1490)}
+controlPointLocations = {"PLAYERBASE": pg.Vector2(1990, 1625), "INVADERBASE": pg.Vector2(3040, 1090), "CONTESTEDPOINT_A": pg.Vector2(2300, 1130), "CONTESTEDPOINT_B": pg.Vector2(2860, 1490)}
+controlPointSize = 150
 invadersOnMap = []
 
 #Math Inits for LOS
@@ -48,7 +49,6 @@ def screenToWorldCoords(screenCoord):
 
 def worldToScreenCoords(worldCoord):
     return ((worldCoord[0]-cameraCoords[0])*zoomScale+screenSize[0]/2,(worldCoord[1]-cameraCoords[1])*zoomScale+screenSize[1]/2)
-
 
 class Player:
 
@@ -140,7 +140,6 @@ class Player:
         
         pass
 
-
 #Creating the instance of the player so that it can be used inside of Invader.checkForAggro()
 player = Player(2000, 1600)
 
@@ -224,8 +223,6 @@ def read_student_input():
             invadersOnMap.append(Invader(spawninfo[0], controlPointLocations[spawninfo[1]], controlPointLocations[spawninfo[2]]))
         f.seek(0)
         f.truncate()
-
-
 
 # WARNING!!!!!!   Line indicated below can not detect wall when target and origin are horizontal
 #                    v v both are (x,y)
@@ -436,3 +433,38 @@ def generatePath(origin, target):
         return final_path[0]
     else:
         return []
+
+
+def checkForInvadersOnPoint(c_point):
+    for invader in invadersOnMap:
+        
+        if entityIsOnControlPoint(invader, c_point):
+            return True
+    return False
+
+def entityIsOnControlPoint(entity, c_point):
+    #distance is proportional to the angle at which you are checking
+    relativeVector = (entity.position - c_point)
+    relativeVectorAngle = radians(pg.Vector2((-1,0)).angle_to(relativeVector))
+    
+    a = round(controlPointSize / 4)
+    b = round(controlPointSize / 2)
+    c = relativeVectorAngle
+    
+    angledDistanceToCenter = a + ( ((b - a) * (cos(2*c) + 1)) / 2)
+    
+    if relativeVector.magnitude() <= angledDistanceToCenter:
+        return True
+    return False
+
+def drawControlPoints():
+    for C_Point in controlPointLocations:
+        C_Point_Object = pg.Rect(0,0,controlPointSize,round(controlPointSize / 2))
+        C_Point_Object.center = controlPointLocations[C_Point]
+        colour = "cyan"
+        if checkForInvadersOnPoint(C_Point_Object.center):
+            colour = "red"
+        elif entityIsOnControlPoint(player, C_Point_Object.center):
+            colour = "green"
+        
+        pg.draw.ellipse(world, colour, C_Point_Object, 3)
