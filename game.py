@@ -245,9 +245,12 @@ class Invader:
 
     attacking_player = False
 
-    #lists waypoint vectors where the entity moves towards the first element of the list at all times
     PermanentTargetDestination = (0,0)
+
+    #lists waypoint vectors where the entity moves towards the first element of the list at all times
     path = []
+
+    
 
     def __init__(self, invaderType, spawnLoc, destinationLoc):
         self.position = pg.Vector2(spawnLoc[0], spawnLoc[1])
