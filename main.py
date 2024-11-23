@@ -39,9 +39,9 @@ while True:
                 
 
     player.process_user_input()
-    
     player.updatePlayerCamera()
 
+    player.eAbilityTick()#must happen before updatePOS()
     
 
     #Drawing World Map

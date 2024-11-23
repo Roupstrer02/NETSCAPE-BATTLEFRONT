@@ -60,6 +60,16 @@ class Player:
     #lists waypoint vectors where the player moves towards the first element of the list at all times
     path = []
     
+    eAbilityCooldown = 120 #frames
+    eAbilityDuration = 5 #frames
+    eAbilityMousePos = ()
+
+    eAbilityDistance = 100 #px
+
+    eAbilityRemainingFrames = 0
+    eAbilityRemainingCooldownFrames = 0
+
+    
     def __init__(self, x, y):
         #we store position separately
         self.position = pg.Vector2(x,y)
@@ -73,7 +83,12 @@ class Player:
         self.mouseRightPressFlagLast = self.Mouse_R
         self.mouseWheel = 0
         self.keys=pg.key.get_pressed()
+        self.keysLast = self.keys
 
+    
+        self.disableWalking = False
+        
+        
     #user input
     def process_user_input(self):
         
@@ -83,9 +98,56 @@ class Player:
         self.Mouse_L, self.Mouse_M, self.Mouse_R = pg.mouse.get_pressed()
         self.Mouse_Rel_Pos = pg.mouse.get_rel()
         #self.mouseWheel is set outside
+        self.keysLast = self.keys
         self.keys=pg.key.get_pressed()
+
+    def eAbilityTick(self):
+        if self.eAbilityRemainingCooldownFrames <= 0:
+            if self.keys[pg.K_e] and not self.keysLast[pg.K_e]:
+                self.path=[]
+                self.eAbilityRemainingCooldownFrames=self.eAbilityCooldown
+                self.eAbilityRemainingFrames=self.eAbilityDuration
+                self.eAbilityMousePos = self.World_Mouse_Pos
+                self.eAbilityNormalVector = pg.Vector2(self.eAbilityMousePos[0] - self.position[0], self.eAbilityMousePos[1] - self.position[1]).normalize()
+                #Put here anything that should happen on first press
+                #distance=self.eAbilityDistance/self.eAbilityDuration
+
+
+        else:
+            self.eAbilityRemainingCooldownFrames-=1
         
-    
+        if self.eAbilityRemainingFrames>0:
+            #Put here anything that should happen on every tick the ability is active
+            
+            nextPoint=self.position + (self.eAbilityNormalVector * self.eAbilityDistance / self.eAbilityDuration)
+            isInLos, losCollidePoint = lineOfSight(self.position,nextPoint)
+            
+            if not isInLos:
+                #adding small value to losCollidePoint so that its not in a wall
+                losCollidePoint=pg.Vector2(losCollidePoint)
+
+                if losCollidePoint[0] > nextPoint[0]:
+                    losCollidePoint[0]=losCollidePoint[0] + 0.1
+                if losCollidePoint[0] < nextPoint[0]:
+                    losCollidePoint[0]=losCollidePoint[0] - 0.1
+                
+                if losCollidePoint[1] > nextPoint[1]:
+                    losCollidePoint[1]=losCollidePoint[1] + 0.1
+                if losCollidePoint[1] < nextPoint[1]:
+                    losCollidePoint[1]=losCollidePoint[1] - 0.1
+
+                nextPoint=losCollidePoint
+
+            self.position = nextPoint
+            self.eAbilityRemainingFrames-=1
+        else:
+            #Put here anything that should happen on every tick the ability is not active
+            pass
+
+
+            
+
+        
 
     def updatePlayerCamera(self):
         global zoomScale, cameraCoords
@@ -134,24 +196,26 @@ class Player:
 
 
     def updatePos(self):
-       if not len(self.path) == 0:
-            remainingPathSegment = pg.Vector2(self.path[0][0] - self.position[0], self.path[0][1] - self.position[1])
-            if not self.path[0] == self.position:
-                direction = pg.Vector2(self.path[0][0] - self.position[0], self.path[0][1] - self.position[1]).normalize()
-                
-            else:
-                direction = pg.Vector2((0,0))
+        if self.disableWalking == False:
+            if not len(self.path) == 0:
+                    remainingPathSegment = pg.Vector2(self.path[0][0] - self.position[0], self.path[0][1] - self.position[1])
+                    if not self.path[0] == self.position:
+                        direction = pg.Vector2(self.path[0][0] - self.position[0], self.path[0][1] - self.position[1]).normalize()
+                        
+                    else:
+                        direction = pg.Vector2((0,0))
 
-            #this if/else stops jittering when arriving at any waypoint
-            if (remainingPathSegment.magnitude() > self.speed):
-                self.position += self.speed * direction
-            else:
-                self.position = pg.Vector2(self.path[0])
+                    #this if/else stops jittering when arriving at any waypoint
+                    if (remainingPathSegment.magnitude() > self.speed):
+                        self.position += self.speed * direction
+                    else:
+                        self.position = pg.Vector2(self.path[0])
 
 
-                #remove completed waypoint from path
-                del self.path[0]
-            self.hitbox.center = (round(self.position[0]), round(self.position[1])-self.size[1]/2)
+                        #remove completed waypoint from path
+                        del self.path[0]
+        self.hitbox.x = self.position[0]-self.size[0]/2
+        self.hitbox.y = self.position[1]-self.size[1]
     
     def drawOnWorld(self):
         pg.draw.rect(world, "cyan", self.hitbox)
@@ -232,11 +296,12 @@ class Invader:
 
                 #remove completed waypoint from path
                 del self.path[0]
-            self.hitbox.center = (round(self.position[0]), round(self.position[1])-self.size[1]/2)
 
     def update(self):
         self.checkForAggro()
         self.move()
+        self.hitbox.x = self.position[0]-self.size[0]/2
+        self.hitbox.y = self.position[1]-self.size[1]
 
 def read_student_input():
     with open('student_input.txt', 'r+') as f:
@@ -489,8 +554,3 @@ def drawControlPoints():
         
         pg.draw.ellipse(world, colour, C_Point_Object, 3)
 
-
-testingMap = {(0,0): [(2,2), (2,0)], (0,2): [(2,2)], (2,2): [(0,0), (2,0), (0,2)], (2,0): [(0,0), (2,2)]}
-testingPath = dijkstra_pathfinding((0,0), (0,2), testingMap)
-
-print(testingPath)
