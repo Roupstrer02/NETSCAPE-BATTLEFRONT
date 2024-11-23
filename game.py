@@ -312,7 +312,8 @@ def dijkstra_pathfinding(start, end, mapGraph):
             if not elem in visitedNodes:
                 newDistance = sqrt((elem[0] - currentNode[0])**2 + (elem[1] - currentNode[1])**2)
                 
-                visitableNodes[elem] = newDistance
+                if not elem in visitableNodes.keys() or visitableNodes[elem] > pathSoFar[1] + newDistance:
+                    visitableNodes[elem] = pathSoFar[1] + newDistance
 
                 if currentNode == start:
                     pathsToNodes[elem] = ([currentNode], newDistance)
@@ -321,7 +322,6 @@ def dijkstra_pathfinding(start, end, mapGraph):
                     alreadyHasPath = elem in pathsToNodes.keys()
                     
                     if not alreadyHasPath:
-                    
                         pathsToNodes[elem] = (pathSoFar[0] + [currentNode], pathSoFar[1] + newDistance)
 
                     #WHEN ADDING PATHS TO THE DICT, I NEED TO KEEP TRACK OF HOW LONG THEY ARE AND NOT UPDATE THEM IF THEY'RE STRAIGHT UP WORSE
@@ -330,6 +330,8 @@ def dijkstra_pathfinding(start, end, mapGraph):
 
         #mark current node as no longer visitable
         visitableNodes.pop(currentNode)
+
+    
 
     #returns None if no path can be found
     return pathsToNodes.get(end)
@@ -486,3 +488,9 @@ def drawControlPoints():
             colour = "green"
         
         pg.draw.ellipse(world, colour, C_Point_Object, 3)
+
+
+testingMap = {(0,0): [(2,2), (2,0)], (0,2): [(2,2)], (2,2): [(0,0), (2,0), (0,2)], (2,0): [(0,0), (2,2)]}
+testingPath = dijkstra_pathfinding((0,0), (0,2), testingMap)
+
+print(testingPath)
