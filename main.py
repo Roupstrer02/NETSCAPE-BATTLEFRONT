@@ -43,6 +43,7 @@ while True:
 
     player.eAbilityTick()#must happen before updatePOS()
     
+    updateControlPoints()
 
     #Drawing World Map
     world.blit(worldMap, (0,0))
