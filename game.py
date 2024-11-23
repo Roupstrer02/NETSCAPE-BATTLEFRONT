@@ -287,14 +287,15 @@ def dijkstra_pathfinding(start, end, mapGraph):
     start=tuple(start)
     end=tuple(end)
 
-    #check if player is already at destination
-    if start == end:
-        return []
 
     visitableNodes = {start: 0.0}
     visitedNodes = set()
     pathsToNodes = {start: ([start], 0.0)}
 
+    #check if player is already at destination
+    if start == end:
+        return pathsToNodes.get(start)
+    
     while len(visitableNodes) > 0:
         
         #pick new node to look through
@@ -318,9 +319,6 @@ def dijkstra_pathfinding(start, end, mapGraph):
                 
                 else:
                     alreadyHasPath = elem in pathsToNodes.keys()
-
-                    #remaining **euclidian** distance to target (heuristics) 
-                    #distance_to_end = sqrt((end[0] - elem[0])**2 + (end[1] - elem[1])**2)
                     
                     if not alreadyHasPath:
                     
