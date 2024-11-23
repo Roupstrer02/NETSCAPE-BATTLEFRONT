@@ -17,6 +17,9 @@ fpsClock = pg.time.Clock()
 controlPointLocations = {"PLAYERBASE": pg.Vector2(1990, 1625), "INVADERBASE": pg.Vector2(3040, 1090), "CONTESTEDPOINT_A": pg.Vector2(2300, 1130), "CONTESTEDPOINT_B": pg.Vector2(2860, 1490)}
 controlPointSize = 150
 invadersOnMap = []
+
+
+
 #Keeps cursor in window
 pg.event.set_grab(True)
 
@@ -233,6 +236,7 @@ class Invader:
     size = (1,1)
 
     health = 1
+    maxHealth = 1
     damage = 1
     
 
@@ -253,17 +257,24 @@ class Invader:
         #change the unit's stats, range, etc. based on invaderType ("zergling", "roach", "hydralisk", "ultralisk", etc.)
         if invaderType == "Zergling":
             self.health = 10
+            self.maxHealth = self.health
             self.damage = 2
             self.size = (10,10)
-        
+
         self.hitbox = pg.Rect(0,0,self.size[0],self.size[1])
+        self.healthbar = pg.Rect(round(self.position[0] - (self.size[0] * 0.75)), round(self.position[1] - (self.size[1] * 1.5)), round(self.size[0] * 1.5), round(self.size[1] * 0.2))
         self.hitbox.center = (spawnLoc[0], spawnLoc[1]-self.size[1]/2)
 
     #All Invaders still need to:
     # be able to target player when nearby and chase them
 
     def draw(self, surface):
+
+        health_percent_factor_colour = pg.math.lerp(0,255, self.health / self.maxHealth)
+        colour = (255 - health_percent_factor_colour, health_percent_factor_colour, 0)
+        
         pg.draw.ellipse(surface, "red", self.hitbox)
+        pg.draw.rect(surface, colour, self.healthbar)
 
     #retargets the path to go towards the player if they're in LOS and within aggro range
     def checkForAggro(self):
@@ -300,8 +311,12 @@ class Invader:
     def update(self):
         self.checkForAggro()
         self.move()
+        
         self.hitbox.x = self.position[0]-self.size[0]/2
         self.hitbox.y = self.position[1]-self.size[1]
+
+        self.healthbar.x = round(self.position[0] - (self.size[0] * 0.75))
+        self.healthbar.y = round(self.position[1] - (self.size[1] * 1.5))
 
 def read_student_input():
     with open('student_input.txt', 'r+') as f:
