@@ -43,7 +43,6 @@ while True:
 
     player.eAbilityTick()#must happen before updatePOS()
     
-
     #Drawing World Map
     world.blit(worldMap, (0,0))
 
@@ -106,6 +105,7 @@ while True:
     #                 pg.draw.aaline(screen,"grey", worldToScreenCoords(player.path[-1]), worldToScreenCoords(node))
     #------------------------------------------------------------------------
 
+    
     #standard game loop
     pg.display.flip()
     clock.tick(60)

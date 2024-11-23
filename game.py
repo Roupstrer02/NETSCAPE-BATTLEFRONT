@@ -1,7 +1,7 @@
 import pygame as pg
 import numpy as np
 from nodes import *
-from math import sqrt, cos, radians
+from math import sqrt, cos, radians, sin
 import copy
 
 #FIX THE DAMN PATHFINDING SO THAT IT'S CONSISTENT
@@ -61,10 +61,10 @@ class Player:
     path = []
     
     eAbilityCooldown = 120 #frames
-    eAbilityDuration = 5 #frames
+    eAbilityDuration = 6 #frames
     eAbilityMousePos = ()
 
-    eAbilityDistance = 100 #px
+    eAbilityDistance = 80 #px
 
     eAbilityRemainingFrames = 0
     eAbilityRemainingCooldownFrames = 0
@@ -119,7 +119,8 @@ class Player:
         if self.eAbilityRemainingFrames>0:
             #Put here anything that should happen on every tick the ability is active
             
-            nextPoint=self.position + (self.eAbilityNormalVector * self.eAbilityDistance / self.eAbilityDuration)
+            nextPoint = self.position + (self.eAbilityNormalVector * self.eAbilityDistance * isoMoveScaleFactor(self.position,self.eAbilityMousePos) / self.eAbilityDuration)
+            
             isInLos, losCollidePoint = lineOfSight(self.position,nextPoint)
             
             if not isInLos:
@@ -198,22 +199,24 @@ class Player:
     def updatePos(self):
         if self.disableWalking == False:
             if not len(self.path) == 0:
-                    remainingPathSegment = pg.Vector2(self.path[0][0] - self.position[0], self.path[0][1] - self.position[1])
-                    if not self.path[0] == self.position:
-                        direction = pg.Vector2(self.path[0][0] - self.position[0], self.path[0][1] - self.position[1]).normalize()
-                        
-                    else:
-                        direction = pg.Vector2((0,0))
+                currSpeed = self.speed*isoMoveScaleFactor(self.position,self.path[0])
+                remainingPathSegment = pg.Vector2(self.path[0][0] - self.position[0], self.path[0][1] - self.position[1])
+                if not self.path[0] == self.position:
+                    direction = pg.Vector2(self.path[0][0] - self.position[0], self.path[0][1] - self.position[1]).normalize()
+                    
+                else:
+                    direction = pg.Vector2((0,0))
 
-                    #this if/else stops jittering when arriving at any waypoint
-                    if (remainingPathSegment.magnitude() > self.speed):
-                        self.position += self.speed * direction
-                    else:
-                        self.position = pg.Vector2(self.path[0])
+                #this if/else stops jittering when arriving at any waypoint
+                
+                if (remainingPathSegment.magnitude() > currSpeed):
+                    self.position += currSpeed * direction
+                else:
+                    self.position = pg.Vector2(self.path[0])
 
 
-                        #remove completed waypoint from path
-                        del self.path[0]
+                    #remove completed waypoint from path
+                    del self.path[0]
         self.hitbox.x = self.position[0]-self.size[0]/2
         self.hitbox.y = self.position[1]-self.size[1]
     
@@ -280,6 +283,7 @@ class Invader:
 
     def move(self):
         if not len(self.path) == 0:
+            currSpeed = self.speed*isoMoveScaleFactor(self.position,self.path[0])
             remainingPathSegment = pg.Vector2(self.path[0][0] - self.position[0], self.path[0][1] - self.position[1])
             if not self.path[0] == self.position:
                 direction = pg.Vector2(self.path[0][0] - self.position[0], self.path[0][1] - self.position[1]).normalize()
@@ -288,8 +292,8 @@ class Invader:
                 direction = pg.Vector2((0,0))
 
             #this if/else stops jittering when arriving at any waypoint
-            if (remainingPathSegment.magnitude() > self.speed):
-                self.position += self.speed * direction
+            if (remainingPathSegment.magnitude() > currSpeed):
+                self.position += currSpeed * direction
             else:
                 self.position = pg.Vector2(self.path[0])
 
@@ -554,3 +558,14 @@ def drawControlPoints():
         
         pg.draw.ellipse(world, colour, C_Point_Object, 3)
 
+def isoMoveScaleFactor(currPos, targetPos):
+    relativeVector = pg.Vector2(targetPos) - pg.Vector2(currPos) 
+    relativeVectorAngle = abs(pg.Vector2((1,0)).angle_to(relativeVector))
+    
+    if relativeVectorAngle > 90:
+        relativeVectorAngle = 180 - relativeVectorAngle
+    
+    
+    relativeVectorAngle=radians(relativeVectorAngle)
+
+    return sqrt(cos(relativeVectorAngle)*cos(relativeVectorAngle)+(sin(relativeVectorAngle)/2)*(sin(relativeVectorAngle)/2))
