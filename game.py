@@ -17,6 +17,8 @@ fpsClock = pg.time.Clock()
 controlPointLocations = {"PLAYERBASE": pg.Vector2(1990, 1625), "INVADERBASE": pg.Vector2(3040, 1090), "CONTESTEDPOINT_A": pg.Vector2(2300, 1130), "CONTESTEDPOINT_B": pg.Vector2(2860, 1490)}
 controlPointSize = 150
 invadersOnMap = []
+#Keeps cursor in window
+pg.event.set_grab(True)
 
 #Math Inits for LOS
 allWallEdgesMatrix = np.array(allWallEdgesList)
@@ -68,6 +70,8 @@ class Player:
         self.Screen_Mouse_Pos = pg.mouse.get_pos()
         self.World_Mouse_Pos = screenToWorldCoords(self.Screen_Mouse_Pos)
         self.Mouse_L, self.Mouse_M, self.Mouse_R = pg.mouse.get_pressed()
+        self.mouseRightPressFlagLast = self.Mouse_R
+        self.mouseWheel = 0
         self.keys=pg.key.get_pressed()
 
     #user input
@@ -77,28 +81,40 @@ class Player:
         self.Screen_Mouse_Pos = pg.mouse.get_pos()
         self.World_Mouse_Pos = screenToWorldCoords(self.Screen_Mouse_Pos)
         self.Mouse_L, self.Mouse_M, self.Mouse_R = pg.mouse.get_pressed()
+        self.Mouse_Rel_Pos = pg.mouse.get_rel()
+        #self.mouseWheel is set outside
         self.keys=pg.key.get_pressed()
+        
     
 
     def updatePlayerCamera(self):
         global zoomScale, cameraCoords
         
-        if self.keys[pg.K_a]:
-            cameraCoords[0]-=10/zoomScale
-        if self.keys[pg.K_d]:
-            cameraCoords[0]+=10/zoomScale
-        if self.keys[pg.K_w]:
-            cameraCoords[1]-=10/zoomScale
-        if self.keys[pg.K_s]:
-            cameraCoords[1]+=10/zoomScale
+        if self.Screen_Mouse_Pos[0]<2:
+            cameraCoords[0]-=20/zoomScale
+        if self.Screen_Mouse_Pos[0]>screenSize[0]-2:
+            cameraCoords[0]+=20/zoomScale
+        if self.Screen_Mouse_Pos[1]<2:
+            cameraCoords[1]-=20/zoomScale
+        if self.Screen_Mouse_Pos[1]>screenSize[1]-2:
+            cameraCoords[1]+=20/zoomScale
 
-        if self.keys[pg.K_e] and zoomScale<14:
-            zoomScale=zoomScale*1.04 
-        if self.keys[pg.K_q] and zoomScale>0.2:
-            zoomScale=zoomScale/1.04
+        if self.Mouse_M:
+            cameraCoords[0]-=self.Mouse_Rel_Pos[0]/zoomScale
+            cameraCoords[1]-=self.Mouse_Rel_Pos[1]/zoomScale
+
+        if (self.mouseWheel > 0 and zoomScale < 14) or (self.mouseWheel < 0 and zoomScale > 0.2):
+            zoomScaleLast=zoomScale
+            zoomScale=zoomScale*pow(1.08,self.mouseWheel)
+            screenSizeLast=(screenSize[0]/zoomScaleLast,screenSize[1]/zoomScaleLast)
+            screenSizeCurr=(screenSize[0]/zoomScale,screenSize[1]/zoomScale)
+            cameraCoords[0]+=(screenSizeLast[0]-screenSizeCurr[0])*(self.Screen_Mouse_Pos[0]/screenSize[0])+(screenSizeCurr[0]-screenSizeLast[0])/2
+            cameraCoords[1]+=(screenSizeLast[1]-screenSizeCurr[1])*(self.Screen_Mouse_Pos[1]/screenSize[1])+(screenSizeCurr[1]-screenSizeLast[1])/2
+            
+            self.mouseWheel=0
 
         if self.keys[pg.K_SPACE]:
-            cameraCoords = self.position
+            cameraCoords = copy.deepcopy(self.position)
         
         # if self.keys[pg.K_SPACE]:
         #     while(keys[pg.K_SPACE]):
@@ -108,9 +124,14 @@ class Player:
 
     
     def pathfind(self):
+        
         if self.Mouse_R:
-            self.path = generatePath(self.position, self.World_Mouse_Pos)
-        return self.path
+            if self.mouseRightPressFlagLast == False:
+                self.path = generatePath(self.position, self.World_Mouse_Pos)
+            self.mouseRightPressFlagLast=True
+        else:
+            self.mouseRightPressFlagLast=False
+
 
     def updatePos(self):
        if not len(self.path) == 0:
@@ -135,6 +156,7 @@ class Player:
     def drawOnWorld(self):
         pg.draw.rect(world, "cyan", self.hitbox)
         pg.draw.circle(world, "red", self.position,1)
+
     
     def drawOnScreen(self):
         
@@ -171,7 +193,7 @@ class Invader:
             self.size = (10,10)
         
         self.hitbox = pg.Rect(0,0,self.size[0],self.size[1])
-        self.hitbox.center = (spawnLoc[0], spawnLoc[1])
+        self.hitbox.center = (spawnLoc[0], spawnLoc[1]-self.size[1]/2)
 
     #All Invaders still need to:
     # be able to target player when nearby and chase them
@@ -210,7 +232,7 @@ class Invader:
 
                 #remove completed waypoint from path
                 del self.path[0]
-            self.hitbox.center = (round(self.position[0]), round(self.position[1]))
+            self.hitbox.center = (round(self.position[0]), round(self.position[1])-self.size[1]/2)
 
     def update(self):
         self.checkForAggro()
@@ -420,14 +442,11 @@ def generatePath(origin, target):
                 if isInLos:
                     workingPathfindingNetwork[origin].append(currNode)
                     workingPathfindingNetwork[currNode].append(origin)
-            
-    
     
     ###############
     #STEP2: RUN DIJKSTRA ON THE NEW NETWORK
     ###############
     final_path = dijkstra_pathfinding(origin, target, workingPathfindingNetwork)
-
     if not final_path == None: 
         final_path[0].append(target)
         return final_path[0]

@@ -31,9 +31,12 @@ while True:
     read_student_input()
 
     for event in pg.event.get():
-        if event.type == QUIT:
-            pg.quit()
-            sys.exit()
+            if event.type == QUIT:
+               pg.quit()
+            elif event.type == MOUSEWHEEL:
+                player.mouseWheel = event.y
+
+                
 
     player.process_user_input()
     
@@ -82,7 +85,25 @@ while True:
             for i in range(len(waypoints)-1):
                 pg.draw.aaline(screen,"red", worldToScreenCoords(waypoints[i]), worldToScreenCoords(waypoints[i+1]))
 
-
+    #draw all nodes and network edges
+    # for currNode in list(pathfindingNetwork.keys()):
+    #         pg.draw.circle(screen,"grey", worldToScreenCoords(currNode), 4)
+    #         for targetNode in pathfindingNetwork.get(currNode):
+    #             pg.draw.aaline(screen,"grey", worldToScreenCoords(currNode), worldToScreenCoords(targetNode))
+    
+    
+    #Shows Nodes in LOS of player
+    # for node in list(pathfindingNetwork.keys()):
+    #         isInLos, _ = lineOfSight(player.position,node)
+    #         if isInLos:
+    #             pg.draw.aaline(screen,"grey", worldToScreenCoords(player.position), worldToScreenCoords(node))
+    
+    #Shows Nodes in LOS of player's final waypoint
+    # if player.path != []:
+    #     for node in list(pathfindingNetwork.keys()):
+    #             isInLos, _ = lineOfSight(player.path[-1],node)
+    #             if isInLos:
+    #                 pg.draw.aaline(screen,"grey", worldToScreenCoords(player.path[-1]), worldToScreenCoords(node))
     #------------------------------------------------------------------------
 
     #standard game loop
