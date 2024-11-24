@@ -190,7 +190,11 @@ class Player:
         
         if self.Mouse_R:
             if self.mouseRightPressFlagLast == False:
-                self.path = generatePath(self.position, self.World_Mouse_Pos)
+                if self.keys[pg.K_LSHIFT] and self.path != []:
+                    self.path.extend(generatePath(self.path[-1], self.World_Mouse_Pos))
+
+                else:
+                    self.path = generatePath(self.position, self.World_Mouse_Pos)
             self.mouseRightPressFlagLast=True
         else:
             self.mouseRightPressFlagLast=False
@@ -519,6 +523,7 @@ def generatePath(origin, target):
     final_path = dijkstra_pathfinding(origin, target, workingPathfindingNetwork)
     if not final_path == None: 
         final_path[0].append(target)
+        final_path[0].pop(0)
         return final_path[0]
     else:
         return []
