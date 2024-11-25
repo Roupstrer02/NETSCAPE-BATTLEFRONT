@@ -14,11 +14,11 @@ clock = pg.time.Clock()
 screen = pg.display.set_mode(screenSize)
 pg.display.set_caption('NETSCAPE: BATTLEFRONT')
 fpsClock = pg.time.Clock()
-controlPointLocations = {"PLAYERBASE": pg.Vector2(1990, 1625), "INVADERBASE": pg.Vector2(3040, 1090), "CONTESTEDPOINT_A": pg.Vector2(2300, 1130), "CONTESTEDPOINT_B": pg.Vector2(2860, 1490)}
-controlPointSize = 150
+
 invadersOnMap = []
 
-
+controlPointLocations = {"PLAYERBASE": pg.Vector2(1990, 1625), "INVADERBASE": pg.Vector2(3040, 1090), "CONTESTEDPOINT_A": pg.Vector2(2300, 1130), "CONTESTEDPOINT_B": pg.Vector2(2860, 1490)}
+controlPointSize = 150
 
 #Keeps cursor in window
 pg.event.set_grab(True)
@@ -232,14 +232,68 @@ class Player:
 #Creating the instance of the player so that it can be used inside of Invader.checkForAggro()
 player = Player(2000, 1600)
 
+class controlPoint:
+
+    takeover_progress = 0
+    takeover_duration = 300  #measured in ticks
+
+
+    def __init__(self, position, alignment):
+        self.position = position
+
+        #alignment: 0 --> player controlled | 1 --> neutral, no control | 2 --> invader controlled 
+        self.alignment = alignment
+
+        if alignment == 0:
+            self.takeover_progress = -self.takeover_duration
+        if alignment == 2:
+            self.takeover_progress = self.takeover_duration
+
+    def update(self):
+        player_on_point = entityIsOnControlPoint(player, self.position)
+        invaders_on_point = checkForInvadersOnPoint(self.position)
+
+        #takeover progress
+        if player_on_point and invaders_on_point:
+            pass
+
+        elif player_on_point:
+            self.takeover_progress -= 1
+
+        elif invaders_on_point:
+            self.takeover_progress += 1
+        
+        if abs(self.takeover_progress) == self.takeover_duration:
+            if self.takeover_progress < 0:
+                self.alignment = 0
+            else:
+                self.alignment = 2
+
+        elif self.takeover_progress == 0:
+            self.alignment = 1
+
+    def draw(self):
+        visible_object = pg.Rect(0, 0, controlPointSize,round(controlPointSize / 2))
+        visible_object.center = self.position
+        if self.alignment == 0:
+            colour = "green"
+        elif self.alignment == 1:
+            colour = "cyan"
+        elif self.alignment == 2:
+            colour = "red"
+        
+        pg.draw.ellipse(world, colour, visible_object, 3)
+
+controlPoints = [controlPoint(controlPointLocations["PLAYERBASE"], 0), controlPoint(controlPointLocations["INVADERBASE"], 2), controlPoint(controlPointLocations["CONTESTEDPOINT_A"], 1), controlPoint(controlPointLocations["CONTESTEDPOINT_B"], 1)]
+
 class Invader:
     size = (1,1)
 
     health = 1
     maxHealth = 1
+
     damage = 1
     
-
     speed = 1
     aggro_range = 400
 
@@ -250,7 +304,7 @@ class Invader:
     #lists waypoint vectors where the entity moves towards the first element of the list at all times
     path = []
 
-    
+
 
     def __init__(self, invaderType, spawnLoc, destinationLoc):
         self.position = pg.Vector2(spawnLoc[0], spawnLoc[1])
@@ -263,10 +317,12 @@ class Invader:
             self.maxHealth = self.health
             self.damage = 2
             self.size = (10,10)
-
+            self.healthbarSize = (round(self.size[0] * 1.5), round(self.size[1] * 0.2))
         self.hitbox = pg.Rect(0,0,self.size[0],self.size[1])
-        self.healthbar = pg.Rect(round(self.position[0] - (self.size[0] * 0.75)), round(self.position[1] - (self.size[1] * 1.5)), round(self.size[0] * 1.5), round(self.size[1] * 0.2))
+        self.healthbar = pg.Rect(round(self.position[0] - (self.size[0] * 0.75)), round(self.position[1] - (self.size[1] * 1.5)), self.healthbarSize[0], self.healthbarSize[1])
         self.hitbox.center = (spawnLoc[0], spawnLoc[1]-self.size[1]/2)
+
+
 
     #All Invaders still need to:
     # be able to target player when nearby and chase them
@@ -274,8 +330,10 @@ class Invader:
     def draw(self, surface):
 
         health_percent_factor_colour = pg.math.lerp(0,255, self.health / self.maxHealth)
+        health_percent_size = pg.math.lerp(0,self.healthbarSize[0], self.health / self.maxHealth)
         colour = (255 - health_percent_factor_colour, health_percent_factor_colour, 0)
-        
+        self.healthbar.w = health_percent_size
+
         pg.draw.ellipse(surface, "red", self.hitbox)
         pg.draw.rect(surface, colour, self.healthbar)
 
@@ -560,15 +618,10 @@ def entityIsOnControlPoint(entity, c_point):
         return True
     return False
 
-def drawControlPoints():
-    for C_Point in controlPointLocations:
-        C_Point_Object = pg.Rect(0,0,controlPointSize,round(controlPointSize / 2))
-        C_Point_Object.center = controlPointLocations[C_Point]
-        colour = "cyan"
-        if checkForInvadersOnPoint(C_Point_Object.center):
-            colour = "red"
-        elif entityIsOnControlPoint(player, C_Point_Object.center):
-            colour = "green"
-        
-        pg.draw.ellipse(world, colour, C_Point_Object, 3)
+def updateControlPoints():
+    for C_Point in controlPoints:
+        C_Point.update()
 
+def drawControlPoints():
+    for C_Point in controlPoints:
+        C_Point.draw()
