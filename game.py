@@ -291,9 +291,9 @@ class Invader:
 
     health = 1
     maxHealth = 1
+
     damage = 1
     
-
     speed = 1
     aggro_range = 400
 
@@ -317,9 +317,9 @@ class Invader:
             self.maxHealth = self.health
             self.damage = 2
             self.size = (10,10)
-
+            self.healthbarSize = (round(self.size[0] * 1.5), round(self.size[1] * 0.2))
         self.hitbox = pg.Rect(0,0,self.size[0],self.size[1])
-        self.healthbar = pg.Rect(round(self.position[0] - (self.size[0] * 0.75)), round(self.position[1] - (self.size[1] * 1.5)), round(self.size[0] * 1.5), round(self.size[1] * 0.2))
+        self.healthbar = pg.Rect(round(self.position[0] - (self.size[0] * 0.75)), round(self.position[1] - (self.size[1] * 1.5)), self.healthbarSize[0], self.healthbarSize[1])
         self.hitbox.center = (spawnLoc[0], spawnLoc[1]-self.size[1]/2)
 
 
@@ -330,8 +330,10 @@ class Invader:
     def draw(self, surface):
 
         health_percent_factor_colour = pg.math.lerp(0,255, self.health / self.maxHealth)
+        health_percent_size = pg.math.lerp(0,self.healthbarSize[0], self.health / self.maxHealth)
         colour = (255 - health_percent_factor_colour, health_percent_factor_colour, 0)
-        
+        self.healthbar.w = health_percent_size
+
         pg.draw.ellipse(surface, "red", self.hitbox)
         pg.draw.rect(surface, colour, self.healthbar)
 
