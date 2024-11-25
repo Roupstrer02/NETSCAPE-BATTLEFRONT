@@ -4,9 +4,6 @@ from nodes import *
 from math import sqrt, cos, radians
 import copy
 
-#FIX THE DAMN PATHFINDING SO THAT IT'S CONSISTENT
-
-
 #init declarations
 pg.init()
 screenSize = (1200,800)
@@ -19,6 +16,8 @@ invadersOnMap = []
 
 controlPointLocations = {"PLAYERBASE": pg.Vector2(1990, 1625), "INVADERBASE": pg.Vector2(3040, 1090), "CONTESTEDPOINT_A": pg.Vector2(2300, 1130), "CONTESTEDPOINT_B": pg.Vector2(2860, 1490)}
 controlPointSize = 150
+
+gameFont = pg.font.Font('freesansbold.ttf', 12)
 
 #Keeps cursor in window
 pg.event.set_grab(True)
@@ -58,7 +57,7 @@ def worldToScreenCoords(worldCoord):
 class Player:
 
     size = (10,20)
-    speed = 1
+    speed = 5
 
     #lists waypoint vectors where the player moves towards the first element of the list at all times
     path = []
@@ -256,11 +255,17 @@ class controlPoint:
         #takeover progress
         if player_on_point and invaders_on_point:
             pass
+        
+        elif not (player_on_point or invaders_on_point) and self.alignment == 1:
+            if self.takeover_progress > 0:
+                self.takeover_progress -= 1
+            elif self.takeover_progress < 0:
+                self.takeover_progress += 1
 
-        elif player_on_point:
+        elif player_on_point and self.takeover_progress > -self.takeover_duration:
             self.takeover_progress -= 1
 
-        elif invaders_on_point:
+        elif invaders_on_point and self.takeover_progress < self.takeover_duration:
             self.takeover_progress += 1
         
         if abs(self.takeover_progress) == self.takeover_duration:
@@ -283,6 +288,14 @@ class controlPoint:
             colour = "red"
         
         pg.draw.ellipse(world, colour, visible_object, 3)
+        
+        if self.takeover_progress != 0:
+            takeover_bar = pg.Rect(self.position[0] - (controlPointSize / 4), self.position[1] - int(controlPointSize / 8), round((controlPointSize / 2) * abs(self.takeover_progress / self.takeover_duration)), int(controlPointSize / 15))
+            pg.draw.rect(world, "gray", takeover_bar)
+            
+            text = gameFont.render(str(int(abs(self.takeover_progress / self.takeover_duration)*100)) + '%', True, "black")
+
+            world.blit(text, (self.position[0] - int(text.get_rect().w / 2), takeover_bar.y - 15))
 
 controlPoints = [controlPoint(controlPointLocations["PLAYERBASE"], 0), controlPoint(controlPointLocations["INVADERBASE"], 2), controlPoint(controlPointLocations["CONTESTEDPOINT_A"], 1), controlPoint(controlPointLocations["CONTESTEDPOINT_B"], 1)]
 
