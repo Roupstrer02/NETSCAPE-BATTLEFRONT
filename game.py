@@ -59,6 +59,8 @@ class Player:
     size = (10,20)
     speed = 5
 
+    maxHealth = 100
+    health = maxHealth
     #lists waypoint vectors where the player moves towards the first element of the list at all times
     path = []
     
@@ -103,6 +105,13 @@ class Player:
         self.keysLast = self.keys
         self.keys=pg.key.get_pressed()
 
+    def damage(self, amount):
+        self.health -= amount
+        if self.health <= 0:
+            self.position = controlPointLocations["PLAYERBASE"]
+            self.health = self.maxHealth
+            #also reset cooldowns on death here?
+
     def eAbilityTick(self):
         if self.eAbilityRemainingCooldownFrames <= 0:
             if self.keys[pg.K_e] and not self.keysLast[pg.K_e]:
@@ -113,7 +122,6 @@ class Player:
                 self.eAbilityNormalVector = pg.Vector2(self.eAbilityMousePos[0] - self.position[0], self.eAbilityMousePos[1] - self.position[1]).normalize()
                 #Put here anything that should happen on first press
                 #distance=self.eAbilityDistance/self.eAbilityDuration
-
 
         else:
             self.eAbilityRemainingCooldownFrames-=1
@@ -350,6 +358,9 @@ class Invader:
         pg.draw.ellipse(surface, "red", self.hitbox)
         pg.draw.rect(surface, colour, self.healthbar)
 
+    def damage(self, amount):
+        self.health -= amount
+
     #retargets the path to go towards the player if they're in LOS and within aggro range
     def checkForAggro(self):
         LOS, _ = lineOfSight(self.position, player.position)
@@ -391,6 +402,13 @@ class Invader:
 
         self.healthbar.x = round(self.position[0] - (self.size[0] * 0.75))
         self.healthbar.y = round(self.position[1] - (self.size[1] * 1.5))
+
+def removeDeadInvaders():
+    for invader in invadersOnMap:
+        if invader.health <= 0:
+            invadersOnMap.remove(invader)
+
+
 
 def read_student_input():
     with open('student_input.txt', 'r+') as f:
