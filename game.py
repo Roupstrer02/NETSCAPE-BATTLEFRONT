@@ -1,8 +1,9 @@
 import pygame as pg
 import numpy as np
 from nodes import *
-from math import sqrt, cos, radians
+from math import sqrt, sin, cos, radians, pi
 import copy
+import random as rd
 
 #init declarations
 pg.init()
@@ -18,6 +19,8 @@ controlPointLocations = {"PLAYERBASE": pg.Vector2(1990, 1625), "INVADERBASE": pg
 controlPointSize = 150
 
 gameFont = pg.font.Font('freesansbold.ttf', 12)
+
+invader_resources = 0 #<===== THE CURRENCY FOR SPAWNING INVADERS, SHARED BY ALL STUDENTS. NOT IMPLEMENTED YET
 
 #Keeps cursor in window
 pg.event.set_grab(True)
@@ -338,7 +341,30 @@ class Invader:
             self.maxHealth = self.health
             self.damage = 2
             self.size = (10,10)
-            self.healthbarSize = (round(self.size[0] * 1.5), round(self.size[1] * 0.2))
+            self.speed = 1
+
+        elif invaderType == "Roach":
+            self.health = 15
+            self.maxHealth = self.health
+            self.damage = 1
+            self.size = (12,12)
+            self.speed = 0.5
+
+        elif invaderType == "Hydralisk":
+            self.health = 12
+            self.maxHealth = self.health
+            self.damage = 3
+            self.size = (14,14)
+            self.speed = 0.4
+        elif invaderType == "Ultralisk":
+            self.health = 25
+            self.maxHealth = self.health
+            self.damage = 1
+            self.size = (20,20)
+            self.speed = 0.25
+
+        self.healthbarSize = (round(self.size[0] * 1.5), round(self.size[1] * 0.2))
+        
         self.hitbox = pg.Rect(0,0,self.size[0],self.size[1])
         self.healthbar = pg.Rect(round(self.position[0] - (self.size[0] * 0.75)), round(self.position[1] - (self.size[1] * 1.5)), self.healthbarSize[0], self.healthbarSize[1])
         self.hitbox.center = (spawnLoc[0], spawnLoc[1]-self.size[1]/2)
@@ -414,7 +440,14 @@ def read_student_input():
     with open('student_input.txt', 'r+') as f:
         for line in f:
             spawninfo = line.split(' ')
-            invadersOnMap.append(Invader(spawninfo[0], controlPointLocations[spawninfo[1]], controlPointLocations[spawninfo[2]]))
+            for _ in range(0,int(spawninfo[3])):
+                destination = copy.deepcopy(controlPointLocations[spawninfo[2]])
+                destX = int(controlPointSize * 0.8  / 2)
+                destY = round(destX * sin(rd.random() * (pi / 2)) / 2)
+                destination[0] += rd.randint(-destX, destX)
+                destination[1] += rd.randint(-destY, destY)
+                invadersOnMap.append(Invader(spawninfo[0], controlPointLocations[spawninfo[1]], destination))
+
         f.seek(0)
         f.truncate()
 
