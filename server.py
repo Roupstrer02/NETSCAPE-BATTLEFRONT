@@ -29,10 +29,10 @@ def activate_server():
         unit_starting_locations = request.form["unit_spawn"]
         unit_destination = request.form["unit_destination"]
         
-
+        
 
         with open('student_input.txt', 'a') as f:
-            f.write(unit_type + " " + unit_starting_locations + " " + unit_destination + " " + unit_count + '\n')
+            f.write(unit_type + " " + unit_starting_locations + " " + unit_destination + " " + unit_count + " " + request.environ['REMOTE_ADDR'] + '\n')
 
             
         

@@ -20,8 +20,9 @@ controlPointSize = 150
 
 gameFont = pg.font.Font('freesansbold.ttf', 12)
 
-invader_resources = 0 #<===== THE CURRENCY FOR SPAWNING INVADERS, SHARED BY ALL STUDENTS. NOT IMPLEMENTED YET
-
+invader_resources = dict()
+resource_gen_tick = 0
+unitTypeCost = {"Zergling": 10, "Roach": 15, "Hydralisk": 20, "Ultralisk": 30}
 #Keeps cursor in window
 pg.event.set_grab(True)
 
@@ -434,19 +435,40 @@ def removeDeadInvaders():
         if invader.health <= 0:
             invadersOnMap.remove(invader)
 
-
+def update_invader_resources():
+    global resource_gen_tick
+    if resource_gen_tick == 300:
+        for key in invader_resources:
+            invader_resources[key] += 1
+        resource_gen_tick = 0
+    else:
+        resource_gen_tick += 1
+    
 
 def read_student_input():
     with open('student_input.txt', 'r+') as f:
         for line in f:
             spawninfo = line.split(' ')
+            
+            if spawninfo[4] in invader_resources:
+                S_Resources = invader_resources[spawninfo[4]]
+            else:
+                invader_resources[spawninfo[4]] = 50
+                S_Resources = 50
+            
             for _ in range(0,int(spawninfo[3])):
-                destination = copy.deepcopy(controlPointLocations[spawninfo[2]])
-                destX = int(controlPointSize * 0.8  / 2)
-                destY = round(destX * sin(rd.random() * (pi / 2)) / 2)
-                destination[0] += rd.randint(-destX, destX)
-                destination[1] += rd.randint(-destY, destY)
-                invadersOnMap.append(Invader(spawninfo[0], controlPointLocations[spawninfo[1]], destination))
+                unitCost = unitTypeCost[spawninfo[0]]
+                if S_Resources >= unitCost:
+                    destination = copy.deepcopy(controlPointLocations[spawninfo[2]])
+                    destX = int(controlPointSize * 0.8  / 2)
+                    destY = round(destX * sin(rd.random() * (pi / 2)) / 2)
+                    destination[0] += rd.randint(-destX, destX)
+                    destination[1] += rd.randint(-destY, destY)
+                    invadersOnMap.append(Invader(spawninfo[0], controlPointLocations[spawninfo[1]], destination))
+                    S_Resources -= unitCost
+
+            invader_resources[spawninfo[4]] = S_Resources
+            print(invader_resources)
 
         f.seek(0)
         f.truncate()

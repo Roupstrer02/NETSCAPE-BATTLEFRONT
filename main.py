@@ -11,8 +11,10 @@ from game import *
 #========================================================================================================================================
 #   To do list:
 #
-#       - implement the invaders attacks
-#       - implement the player's abilities
+#       - invaders attacks -> Armen
+#       - player abilities -> Armen
+#       - invader resources
+#           * add resource generation over time (should be scaled per player count)
 #
 #========================================================================================================================================
 
@@ -23,13 +25,11 @@ debugMode = False
 game_server = Thread(target=activate_server)
 game_server.start()
 
-
-
-
 while True:
     #Updates <-could be a better name
     
     read_student_input()
+    update_invader_resources()
 
     for event in pg.event.get():
             if event.type == QUIT:
