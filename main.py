@@ -30,7 +30,7 @@ while True:
     
     read_student_input()
     update_invader_resources()
-
+    update_invader_control_points_file()
     for event in pg.event.get():
             if event.type == QUIT:
                pg.quit()

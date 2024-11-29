@@ -249,9 +249,9 @@ class controlPoint:
     takeover_duration = 300  #measured in ticks
 
 
-    def __init__(self, position, alignment):
+    def __init__(self, position, alignment, name):
         self.position = position
-
+        self.name = name
         #alignment: 0 --> player controlled | 1 --> neutral, no control | 2 --> invader controlled 
         self.alignment = alignment
 
@@ -309,7 +309,7 @@ class controlPoint:
 
             world.blit(text, (self.position[0] - int(text.get_rect().w / 2), takeover_bar.y - 15))
 
-controlPoints = [controlPoint(controlPointLocations["PLAYERBASE"], 0), controlPoint(controlPointLocations["INVADERBASE"], 2), controlPoint(controlPointLocations["CONTESTEDPOINT_A"], 1), controlPoint(controlPointLocations["CONTESTEDPOINT_B"], 1)]
+controlPoints = [controlPoint(controlPointLocations["PLAYERBASE"], 0, "PLAYERBASE"), controlPoint(controlPointLocations["INVADERBASE"], 2, "INVADERBASE"), controlPoint(controlPointLocations["CONTESTEDPOINT_A"], 1, "CONTESTEDPOINT_A"), controlPoint(controlPointLocations["CONTESTEDPOINT_B"], 1, "CONTESTEDPOINT_B")]
 
 class Invader:
     size = (1,1)
@@ -430,6 +430,30 @@ class Invader:
         self.healthbar.x = round(self.position[0] - (self.size[0] * 0.75))
         self.healthbar.y = round(self.position[1] - (self.size[1] * 1.5))
 
+def init_invader_control_points_file():
+    with open("invader_control_points.txt", "w") as cPoints:
+        cPoints.seek(0)
+        cPoints.truncate()
+        cPoints.write("INVADERBASE")
+
+def update_invader_control_points_file():
+    Invader_cPoints = list()
+    File_cPoints = list()
+
+    with open("invader_control_points.txt", 'r+') as cPoints:
+        cPoint_data = cPoints.readline().split(' ')
+        for word in cPoint_data:
+            File_cPoints.append(word)
+
+        for point in controlPoints:
+            if point.alignment == 2:
+                Invader_cPoints.append(point.name)
+            
+        if Invader_cPoints != File_cPoints:
+            cPoints.seek(0)
+            cPoints.truncate()
+            cPoints.write(' '.join(Invader_cPoints))
+
 def removeDeadInvaders():
     for invader in invadersOnMap:
         if invader.health <= 0:
@@ -468,7 +492,7 @@ def read_student_input():
                     S_Resources -= unitCost
 
             invader_resources[spawninfo[4]] = S_Resources
-            print(invader_resources)
+            
 
         f.seek(0)
         f.truncate()

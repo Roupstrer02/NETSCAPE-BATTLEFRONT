@@ -5,9 +5,11 @@
     <title>Exceed Expectations</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.14/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://requirejs.org/docs/release/2.3.5/minified/require.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/theme-change@2.0.2/index.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script src="{{url_for('static', filename='form_input_check.js')}}"></script>
+
 </head>
 <body>
     <div class="navbar bg-base-100">
@@ -136,6 +138,7 @@
                       d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                   <span id="InvalidFormMessage">Invalid Instructions! Spawn Location and Destination must be different!</span>
+                  <span id="InvalidFormMessage2">Invalid Instructions! Spawn Location must be controlled by your team!</span>
                 </div>
             </form>
           </div>
