@@ -22,6 +22,7 @@ gameFont = pg.font.Font('freesansbold.ttf', 12)
 
 invader_resources = dict()
 resource_gen_tick = 0
+resource_gen_speed = 1 #measured in resource/s
 unitTypeCost = {"Zergling": 10, "Roach": 15, "Hydralisk": 20, "Ultralisk": 30}
 #Keeps cursor in window
 pg.event.set_grab(True)
@@ -309,7 +310,8 @@ class controlPoint:
 
             world.blit(text, (self.position[0] - int(text.get_rect().w / 2), takeover_bar.y - 15))
 
-controlPoints = [controlPoint(controlPointLocations["PLAYERBASE"], 0, "PLAYERBASE"), controlPoint(controlPointLocations["INVADERBASE"], 2, "INVADERBASE"), controlPoint(controlPointLocations["CONTESTEDPOINT_A"], 1, "CONTESTEDPOINT_A"), controlPoint(controlPointLocations["CONTESTEDPOINT_B"], 1, "CONTESTEDPOINT_B")]
+#Yes this is a bit backwards, but honestly it's working and not being inefficient at runtime
+controlPoints = {"PLAYERBASE": controlPoint(controlPointLocations["PLAYERBASE"], 0, "PLAYERBASE"), "INVADERBASE": controlPoint(controlPointLocations["INVADERBASE"], 2, "INVADERBASE"), "CONTESTEDPOINT_A": controlPoint(controlPointLocations["CONTESTEDPOINT_A"], 1, "CONTESTEDPOINT_A"), "CONTESTEDPOINT_B": controlPoint(controlPointLocations["CONTESTEDPOINT_B"], 1, "CONTESTEDPOINT_B")}
 
 class Invader:
     size = (1,1)
@@ -446,8 +448,8 @@ def update_invader_control_points_file():
             File_cPoints.append(word)
 
         for point in controlPoints:
-            if point.alignment == 2:
-                Invader_cPoints.append(point.name)
+            if controlPoints[point].alignment == 2:
+                Invader_cPoints.append(point)
             
         if Invader_cPoints != File_cPoints:
             cPoints.seek(0)
@@ -461,7 +463,7 @@ def removeDeadInvaders():
 
 def update_invader_resources():
     global resource_gen_tick
-    if resource_gen_tick == 300:
+    if resource_gen_tick == resource_gen_speed * 60:
         for key in invader_resources:
             invader_resources[key] += 1
         resource_gen_tick = 0
@@ -480,18 +482,19 @@ def read_student_input():
                 invader_resources[spawninfo[4]] = 50
                 S_Resources = 50
             
-            for _ in range(0,int(spawninfo[3])):
-                unitCost = unitTypeCost[spawninfo[0]]
-                if S_Resources >= unitCost:
-                    destination = copy.deepcopy(controlPointLocations[spawninfo[2]])
-                    destX = int(controlPointSize * 0.8  / 2)
-                    destY = round(destX * sin(rd.random() * (pi / 2)) / 2)
-                    destination[0] += rd.randint(-destX, destX)
-                    destination[1] += rd.randint(-destY, destY)
-                    invadersOnMap.append(Invader(spawninfo[0], controlPointLocations[spawninfo[1]], destination))
-                    S_Resources -= unitCost
+            if controlPoints[spawninfo[1]].alignment == 2:
+                for _ in range(0,int(spawninfo[3])):
+                    unitCost = unitTypeCost[spawninfo[0]]
+                    if S_Resources >= unitCost:
+                        destination = copy.deepcopy(controlPointLocations[spawninfo[2]])
+                        destX = int(controlPointSize * 0.8  / 2)
+                        destY = round(destX * sin(rd.random() * (pi / 2)) / 2)
+                        destination[0] += rd.randint(-destX, destX)
+                        destination[1] += rd.randint(-destY, destY)
+                        invadersOnMap.append(Invader(spawninfo[0], controlPointLocations[spawninfo[1]], destination))
+                        S_Resources -= unitCost
 
-            invader_resources[spawninfo[4]] = S_Resources
+                invader_resources[spawninfo[4]] = S_Resources
             
 
         f.seek(0)
@@ -730,8 +733,8 @@ def entityIsOnControlPoint(entity, c_point):
 
 def updateControlPoints():
     for C_Point in controlPoints:
-        C_Point.update()
+        controlPoints[C_Point].update()
 
 def drawControlPoints():
     for C_Point in controlPoints:
-        C_Point.draw()
+        controlPoints[C_Point].draw()

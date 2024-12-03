@@ -125,7 +125,7 @@
                 <input class="btn btn-accent" type="submit" value="Send Instructions"></input>
                 
                 <!-- Error message on invalid form -->
-                <div role="alert" class="alert alert-error mt-10" id="InvalidFormAlert">
+                <div role="alert" class="alert alert-error mt-10" id="InvalidFormAlert" style="visibility: hidden;">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     class="h-6 w-6 shrink-0 stroke-current"
@@ -137,8 +137,7 @@
                       stroke-width="2"
                       d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  <span id="InvalidFormMessage">Invalid Instructions! Spawn Location and Destination must be different!</span>
-                  <span id="InvalidFormMessage2">Invalid Instructions! Spawn Location must be controlled by your team!</span>
+                  <span id="InvalidFormMessage" style="visibility: hidden;">Invalid Instructions! Spawn Location and Destination must be different!</span>
                 </div>
             </form>
           </div>
