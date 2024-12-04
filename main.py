@@ -108,6 +108,7 @@ while True:
     #                 pg.draw.aaline(screen,"grey", worldToScreenCoords(player.path[-1]), worldToScreenCoords(node))
     #------------------------------------------------------------------------
 
+    
     #standard game loop
     pg.display.flip()
     clock.tick(60)
