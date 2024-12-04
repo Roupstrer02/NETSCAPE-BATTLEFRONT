@@ -24,6 +24,27 @@
           </ul>
         </div>
       </div>
+
+      <div class="absolute h-30 top-1/2 left-2/3 w-1/4 bg-base-200 collapse">
+        <input type="checkbox" class="peer" />
+        <div
+          class="collapse-title bg-primary text-primary-content peer-checked:bg-secondary peer-checked:text-secondary-content">
+          ? How to Play ?
+        </div>
+        <div
+          class="collapse-content bg-primary text-primary-content peer-checked:bg-secondary peer-checked:text-secondary-content">
+          <p class="mb-3">Use this tablet to send invaders to your instructor and try to <b>take over all 4 control points</b> on the map.</p>
+          <p class="mb-4">There are 4 elements to your tablet:</p>
+          
+          <ul>
+            <li><b>Invader Type:</b> Each invader has its own unique features</li>
+            <li><b>Spawn Location:</b> Where your invaders will appear</li>
+            <li><b>Destination Target</b>: Where your invaders will go</li>
+            <li><b>Unit Count:</b> How many Invaders you send</li>
+          </ul>
+        </div>
+      </div>
+
     <div class="hero bg-base-200 min-h-screen">
         <div class="hero-content text-center">
           <div class="max-w-md">
@@ -31,6 +52,7 @@
             <p class="py-6">
               Your have joined the team!
             </p>
+
             <form id="controller" method="post">
               <!-- Unit type selection -->
                <span>Choose the type of Invader you want to spawn</span>
@@ -78,32 +100,34 @@
                   <div class="divider divider-horizontal"></div>
 
                   <!-- Unit Destination Location -->
-                  <div class="grid w-full">
-                    <span>Target Destination</span>
-                    <div class="card bg-base-300 rounded-box grid h-30 flex-grow place-items-center">
-                      <div class="form-control">
-                        <label class="label cursor-pointer">
-                          <span class="label-text mr-3">Hive: </span>
-                          <input type="radio" name="unit_destination" class="radio checked:bg-red-500" value="INVADERBASE" checked="checked" />
-                        </label>
-                      </div>
-                      <div class="form-control">
-                        <label class="label cursor-pointer">
-                          <span class="label-text mr-3">Point A: </span>
-                          <input type="radio" name="unit_destination" class="radio checked:bg-red-500" value="CONTESTEDPOINT_A"/>
-                        </label>
-                      </div>
-                      <div class="form-control">
-                        <label class="label cursor-pointer">
-                          <span class="label-text mr-3">Point B: </span>
-                          <input type="radio" name="unit_destination" class="radio checked:bg-red-500" value="CONTESTEDPOINT_B"/>
-                        </label>
-                      </div>
-                      <div class="form-control">
-                        <label class="label cursor-pointer">
-                          <span class="label-text mr-3">Enemy Base: </span>
-                          <input type="radio" name="unit_destination" class="radio checked:bg-red-500" value="PLAYERBASE"/>
-                        </label>
+                  <div class="flex w-full">
+                    <div class="grid w-full">
+                      <span>Target Destination</span>
+                      <div class="card bg-base-300 rounded-box grid h-30 flex-grow place-items-center">
+                        <div class="form-control">
+                          <label class="label cursor-pointer">
+                            <span class="label-text mr-3">Hive: </span>
+                            <input type="radio" name="unit_destination" class="radio checked:bg-red-500" value="INVADERBASE" checked="checked" />
+                          </label>
+                        </div>
+                        <div class="form-control">
+                          <label class="label cursor-pointer">
+                            <span class="label-text mr-3">Point A: </span>
+                            <input type="radio" name="unit_destination" class="radio checked:bg-red-500" value="CONTESTEDPOINT_A"/>
+                          </label>
+                        </div>
+                        <div class="form-control">
+                          <label class="label cursor-pointer">
+                            <span class="label-text mr-3">Point B: </span>
+                            <input type="radio" name="unit_destination" class="radio checked:bg-red-500" value="CONTESTEDPOINT_B"/>
+                          </label>
+                        </div>
+                        <div class="form-control">
+                          <label class="label cursor-pointer">
+                            <span class="label-text mr-3">Enemy Base: </span>
+                            <input type="radio" name="unit_destination" class="radio checked:bg-red-500" value="PLAYERBASE"/>
+                          </label>
+                        </div>
                       </div>
                     </div>
                   </div>

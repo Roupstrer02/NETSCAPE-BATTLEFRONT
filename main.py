@@ -15,6 +15,7 @@ from game import *
 #       - player abilities -> Armen
 #       - invader resources
 #           * add resource generation over time (should be scaled per player count)
+#       - add UI + Minimap
 #
 #========================================================================================================================================
 
