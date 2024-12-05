@@ -62,21 +62,32 @@ def worldToScreenCoords(worldCoord):
 class Player:
 
     size = (10,20)
-    speed = 5
+    speed = 1
 
     maxHealth = 100
     health = maxHealth
     #lists waypoint vectors where the player moves towards the first element of the list at all times
     path = []
     
-    eAbilityCooldown = 120 #frames
-    eAbilityDuration = 6 #frames
-    eAbilityMousePos = ()
 
-    eAbilityDistance = 80 #px
+    meleeCooldown = 1 #frames
+    meleeDuration = 6 #frames
+    meleeMousePos = ()
 
-    eAbilityRemainingFrames = 0
-    eAbilityRemainingCooldownFrames = 0
+    meleeRadius = 30 #px
+
+    meleeRemainingFrames = 0
+    meleeRemainingCooldownFrames = 0
+
+
+    dashCooldown = 120 #frames
+    dashDuration = 6 #frames
+    dashMousePos = ()
+
+    dashDistance = 80 #px
+
+    dashRemainingFrames = 0
+    dashRemainingCooldownFrames = 0
 
     
     def __init__(self, x, y):
@@ -117,24 +128,27 @@ class Player:
             self.health = self.maxHealth
             #also reset cooldowns on death here?
 
-    def eAbilityTick(self):
-        if self.eAbilityRemainingCooldownFrames <= 0:
+    def leftClickAbilityTick(self):
+        pass        
+
+    def eAbilityTick(self):        
+        if self.dashRemainingCooldownFrames <= 0:
             if self.keys[pg.K_e] and not self.keysLast[pg.K_e]:
                 self.path=[]
-                self.eAbilityRemainingCooldownFrames=self.eAbilityCooldown
-                self.eAbilityRemainingFrames=self.eAbilityDuration
-                self.eAbilityMousePos = self.World_Mouse_Pos
-                self.eAbilityNormalVector = pg.Vector2(self.eAbilityMousePos[0] - self.position[0], self.eAbilityMousePos[1] - self.position[1]).normalize()
+                self.dashRemainingCooldownFrames=self.dashCooldown
+                self.dashRemainingFrames=self.dashDuration
+                self.dashMousePos = self.World_Mouse_Pos
+                self.eAbilityNormalVector = pg.Vector2(self.dashMousePos[0] - self.position[0], self.dashMousePos[1] - self.position[1]).normalize()
                 #Put here anything that should happen on first press
-                #distance=self.eAbilityDistance/self.eAbilityDuration
+                #distance=self.dashDistance/self.dashDuration
 
         else:
-            self.eAbilityRemainingCooldownFrames-=1
+            self.dashRemainingCooldownFrames-=1
         
-        if self.eAbilityRemainingFrames>0:
+        if self.dashRemainingFrames>0:
             #Put here anything that should happen on every tick the ability is active
             
-            nextPoint = self.position + (self.eAbilityNormalVector * self.eAbilityDistance * isoMoveScaleFactor(self.position,self.eAbilityMousePos) / self.eAbilityDuration)
+            nextPoint = self.position + (self.eAbilityNormalVector * self.dashDistance * isoMoveScaleFactor(self.position,self.dashMousePos) / self.dashDuration)
             
             isInLos, losCollidePoint = lineOfSight(self.position,nextPoint)
             
@@ -155,7 +169,7 @@ class Player:
                 nextPoint=losCollidePoint
 
             self.position = nextPoint
-            self.eAbilityRemainingFrames-=1
+            self.dashRemainingFrames-=1
         else:
             #Put here anything that should happen on every tick the ability is not active
             pass
@@ -758,3 +772,4 @@ def isoMoveScaleFactor(currPos, targetPos):
     relativeVectorAngle=radians(relativeVectorAngle)
 
     return sqrt(cos(relativeVectorAngle)*cos(relativeVectorAngle)+(sin(relativeVectorAngle)/2)*(sin(relativeVectorAngle)/2))
+
