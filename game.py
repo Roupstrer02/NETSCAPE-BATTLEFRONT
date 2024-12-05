@@ -547,12 +547,18 @@ def read_student_input():
                 for _ in range(0,int(spawninfo[3])):
                     unitCost = unitTypeCost[spawninfo[0]]
                     if S_Resources >= unitCost:
+                        spawnpoint = copy.deepcopy(controlPointLocations[spawninfo[1]])
+                        spawnX = int(controlPointSize * 0.8  / 2)
+                        spawnY = round(spawnX * sin(rd.random() * (pi / 2)) / 2)
+                        spawnpoint[0] += rd.randint(-spawnX, spawnX)
+                        spawnpoint[1] += rd.randint(-spawnY, spawnY)
+
                         destination = copy.deepcopy(controlPointLocations[spawninfo[2]])
                         destX = int(controlPointSize * 0.8  / 2)
                         destY = round(destX * sin(rd.random() * (pi / 2)) / 2)
                         destination[0] += rd.randint(-destX, destX)
                         destination[1] += rd.randint(-destY, destY)
-                        invadersOnMap.append(Invader(spawninfo[0], controlPointLocations[spawninfo[1]], destination))
+                        invadersOnMap.append(Invader(spawninfo[0], spawnpoint, destination))
                         S_Resources -= unitCost
 
                 invader_resources[spawninfo[4]] = S_Resources
