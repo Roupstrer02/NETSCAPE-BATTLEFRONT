@@ -59,6 +59,25 @@ def screenToWorldCoords(screenCoord):
 def worldToScreenCoords(worldCoord):
     return ((worldCoord[0]-cameraCoords[0])*zoomScale+screenSize[0]/2,(worldCoord[1]-cameraCoords[1])*zoomScale+screenSize[1]/2)
 
+def indexOfInvaderAtPoint(target):
+    indexOfInvaderInRange=[]
+    distToInvaderInRange=[]
+    for invader in invadersOnMap:
+        if target[0]>(invader.position[0]-(invader.size[0])/2) and target[0]<(invader.position[0]+(invader.size[0])/2) and target[1]>(invader.position[1]-(invader.size[1])) and target[1]<invader.position[1]:
+            distanceToInvader = pg.Vector2(invader.position[0],invader.position[1]-(invader.size[1])/2)-pg.Vector2(target)
+            indexOfInvaderInRange.append(invadersOnMap.index(invader))
+            distToInvaderInRange.append(distanceToInvader.length_squared())
+    if len(indexOfInvaderInRange) == 0:
+        return None
+    elif len(indexOfInvaderInRange) == 1:
+        return indexOfInvaderInRange[0]
+    else:
+        return indexOfInvaderInRange[distToInvaderInRange.index(min(distToInvaderInRange))]
+
+def pointToPointDist(origin,target):
+    return sqrt((target[0]-origin[0])*(target[0]-origin[0])+(target[1]-origin[1])*(target[1]-origin[1]))
+             
+
 class Player:
 
     size = (10,20)
@@ -70,14 +89,17 @@ class Player:
     path = []
     
 
-    meleeCooldown = 1 #frames
-    meleeDuration = 6 #frames
-    meleeMousePos = ()
+    autoAtkCooldown = 1 #frames
+    autoAtkDuration = 6 #frames
+    autoAtkMousePos = ()
+    autoAtkTargetInvaderIndex = None
 
-    meleeRadius = 30 #px
+    autoAtkRange = 50 #px
 
-    meleeRemainingFrames = 0
-    meleeRemainingCooldownFrames = 0
+    autoAtkRemainingFrames = 0
+    autoAtkRemainingCooldownFrames = 0
+    
+    primaryFireProjectiles = []
 
 
     dashCooldown = 120 #frames
@@ -115,6 +137,9 @@ class Player:
         pg.event.pump()
         self.Screen_Mouse_Pos = pg.mouse.get_pos()
         self.World_Mouse_Pos = screenToWorldCoords(self.Screen_Mouse_Pos)
+        self.Mouse_L_Last=self.Mouse_L
+        self.Mouse_M_Last=self.Mouse_M
+        self.Mouse_R_Last=self.Mouse_R
         self.Mouse_L, self.Mouse_M, self.Mouse_R = pg.mouse.get_pressed()
         self.Mouse_Rel_Pos = pg.mouse.get_rel()
         #self.mouseWheel is set outside
@@ -128,8 +153,22 @@ class Player:
             self.health = self.maxHealth
             #also reset cooldowns on death here?
 
+
+
+
+
+
+
     def leftClickAbilityTick(self):
-        pass        
+        pass
+
+
+
+
+
+
+
+
 
     def eAbilityTick(self):        
         if self.dashRemainingCooldownFrames <= 0:
@@ -773,3 +812,7 @@ def isoMoveScaleFactor(currPos, targetPos):
 
     return sqrt(cos(relativeVectorAngle)*cos(relativeVectorAngle)+(sin(relativeVectorAngle)/2)*(sin(relativeVectorAngle)/2))
 
+def drawHighlightOnMousedOverInvader(target):
+    indexOfMouseOverInvader = indexOfInvaderAtPoint(target)
+    if indexOfMouseOverInvader != None:
+        pg.draw.rect(world,(200,40,40), invadersOnMap[indexOfMouseOverInvader].hitbox, 1)

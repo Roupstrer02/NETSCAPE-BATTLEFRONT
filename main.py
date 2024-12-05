@@ -44,7 +44,8 @@ while True:
     player.updatePlayerCamera()
 
     player.eAbilityTick()#must happen before updatePOS()
-    
+    player.leftClickAbilityTick()
+
     updateControlPoints()
 
     #Drawing World Map
@@ -68,7 +69,7 @@ while True:
     
 
             
-
+    drawHighlightOnMousedOverInvader(player.World_Mouse_Pos)
     #------------------------------------------------------------------------
 
     #Cropping (to save on ram), Zooming, and Displaying World on "screen"
