@@ -15,6 +15,8 @@ fpsClock = pg.time.Clock()
 
 invadersOnMap = []
 
+listOfAllProjectiles = []
+
 controlPointLocations = {"PLAYERBASE": pg.Vector2(1990, 1625), "INVADERBASE": pg.Vector2(3040, 1090), "CONTESTEDPOINT_A": pg.Vector2(2300, 1130), "CONTESTEDPOINT_B": pg.Vector2(2860, 1490)}
 controlPointSize = 150
 
@@ -77,6 +79,114 @@ def indexOfInvaderAtPoint(target):
 def pointToPointDist(origin,target):
     return sqrt((target[0]-origin[0])*(target[0]-origin[0])+(target[1]-origin[1])*(target[1]-origin[1]))
              
+class Projectile:
+    def __init__(self,typeOf,damage,origin,target,speed,life,sizeOf):
+        self.typeOfProjectile = typeOf
+        self.damageOfProjectile = damage
+        self.size = sizeOf
+        self.hitbox = pg.Rect(origin[0],origin[1],self.size[0],self.size[1])
+        self.position = pg.Vector2(origin[0]+self.size[0]/2, origin[1]+self.size[1]/2)
+        self.lifeInTicks = life
+        self.deleteMe = False
+        
+
+        self.stepVector = pg.Vector2((pg.Vector2(target) - pg.Vector2(origin)).normalize() * speed * isoMoveScaleFactor(origin,target))
+        
+        
+    def deleteProjectile(self):
+        self.deleteMe = True
+        
+    def projectileTick(self):
+        if self.typeOfProjectile == "playerPrimary":
+            #check if collide with invader <<---------------------------------------------------------
+                #deal damage and delete
+
+            #Life Tick Down
+            if self.lifeInTicks <= 0:
+                self.deleteProjectile()
+            else:
+                self.lifeInTicks-=1
+            
+            #move 1 step ()
+            nextPos=self.position+self.stepVector
+            isInLos, losCollidePoint = lineOfSight(self.position,nextPos)
+            
+            if not isInLos:
+                #adding small value to losCollidePoint so that its not in a wall
+                losCollidePoint=pg.Vector2(losCollidePoint)
+
+                if losCollidePoint[0] > nextPos[0]:
+                    losCollidePoint[0]=losCollidePoint[0] + 0.1
+                if losCollidePoint[0] < nextPos[0]:
+                    losCollidePoint[0]=losCollidePoint[0] - 0.1
+                
+                if losCollidePoint[1] > nextPos[1]:
+                    losCollidePoint[1]=losCollidePoint[1] + 0.1
+                if losCollidePoint[1] < nextPos[1]:
+                    losCollidePoint[1]=losCollidePoint[1] - 0.1
+
+                # draw a poof at losCollidePoint?
+                self.deleteProjectile()
+            else:
+                self.position += self.stepVector
+                self.hitbox.x = self.position[0]-self.size[0]/2
+                self.hitbox.y = self.position[1]-self.size[1]/2
+
+
+        if self.typeOfProjectile == "playerQ":
+            #check if collide with invader <<---------------------------------------------------------
+                #deal damage and delete
+
+            #Life Tick Down
+            if self.lifeInTicks <= 0:
+                self.deleteProjectile()
+            else:
+                self.lifeInTicks-=1
+            
+            #move 1 step ()
+            nextPos=self.position+self.stepVector
+            isInLos, losCollidePoint = lineOfSight(self.position,nextPos)
+            
+            if not isInLos:
+                #adding small value to losCollidePoint so that its not in a wall
+                losCollidePoint=pg.Vector2(losCollidePoint)
+
+                if losCollidePoint[0] > nextPos[0]:
+                    losCollidePoint[0]=losCollidePoint[0] + 0.1
+                if losCollidePoint[0] < nextPos[0]:
+                    losCollidePoint[0]=losCollidePoint[0] - 0.1
+                
+                if losCollidePoint[1] > nextPos[1]:
+                    losCollidePoint[1]=losCollidePoint[1] + 0.1
+                if losCollidePoint[1] < nextPos[1]:
+                    losCollidePoint[1]=losCollidePoint[1] - 0.1
+
+                # draw a poof at losCollidePoint?
+                self.deleteProjectile()
+            else:
+                self.position += self.stepVector
+                self.hitbox.x = self.position[0]-self.size[0]/2
+                self.hitbox.y = self.position[1]-self.size[1]/2
+
+
+
+    def draw(self):
+        if self.typeOfProjectile == "playerPrimary":
+            pg.draw.ellipse(world, (255, 0, 0), self.hitbox)
+        if self.typeOfProjectile == "playerQ":
+            pg.draw.ellipse(world, (255, 0, 0), self.hitbox)
+
+def allProjectileTick():
+    for projectile in listOfAllProjectiles:
+        projectile.projectileTick()
+        if projectile.deleteMe:
+            listOfAllProjectiles.remove(projectile)
+
+def allProjectileDraw():
+    for projectile in listOfAllProjectiles:
+        projectile.draw()
+
+        
 
 class Player:
 
@@ -89,17 +199,28 @@ class Player:
     path = []
     
 
-    autoAtkCooldown = 1 #frames
-    autoAtkDuration = 6 #frames
+    autoAtkCooldown = 2 #frames
     autoAtkMousePos = ()
-    autoAtkTargetInvaderIndex = None
 
-    autoAtkRange = 50 #px
+    autoAtkDmg = 10
+    autoAtkSpeed = 5
+    autoAtkLife = 30
+    autoAtkSize = (2,2)
 
-    autoAtkRemainingFrames = 0
     autoAtkRemainingCooldownFrames = 0
     
-    primaryFireProjectiles = []
+    primaryFireAlternateFlag = False
+
+
+    qAtkCooldown = 2 #frames
+    qAtkMousePos = ()
+
+    qAtkDmg = 2
+    qAtkSpeed = 6
+    qAtkLife = 200
+    qAtkSize = (4,4)
+
+    qAtkRemainingCooldownFrames = 0
 
 
     dashCooldown = 120 #frames
@@ -155,14 +276,71 @@ class Player:
 
 
 
-
+    
+    # def leftClickAbilityTick(self):
+    #     if self.autoAtkRemainingCooldownFrames <= 0:
+    #         if self.keys[pg.K_e] and not self.keysLast[pg.K_e]:
+    #             #Put here anything that should happen on first press
+    #             self.path=[]
+    #             self.autoAtkRemainingCooldownFrames=self.autoAtkCooldown
+    #             self.autoAtkRemainingFrames=self.autoAtkDuration
+    #             self.autoAtkMousePos = self.World_Mouse_Pos
+    #             self.eAbilityNormalVector = pg.Vector2(self.dashMousePos[0] - self.position[0], self.dashMousePos[1] - self.position[1]).normalize()
+                
+    #     else:
+    #         self.autoAtkRemainingCooldownFrames-=1
+        
+    #     if self.autoAtkRemainingFrames>0:
+    #         #Put here anything that should happen on every tick the ability is active
+            
+    #         #At the end:
+    #         self.dashRemainingFrames-=1
+    #     else:
+    #         #Put here anything that should happen on every tick the ability is not active
+    #         pass
 
 
 
     def leftClickAbilityTick(self):
-        pass
+        if self.autoAtkRemainingCooldownFrames <= 0:
+            if self.Mouse_L and not self.keys[pg.K_q]:
+                #Put here anything that should happen on first press
+                self.autoAtkRemainingCooldownFrames=self.autoAtkCooldown
+                self.autoAtkMousePos = self.World_Mouse_Pos
+                atkOrigin = (pg.Vector2(self.autoAtkMousePos) - pg.Vector2(self.position[0],self.position[1]-self.size[1]/2)).normalize()*self.size[0]/2
+                
+                if self.primaryFireAlternateFlag:
+                    atkOrigin = pg.Vector2(-atkOrigin[1],atkOrigin[0])
+                    atkOrigin = atkOrigin*isoMoveScaleFactor((0,0),atkOrigin)
+                    atkOrigin += pg.Vector2(self.position[0],self.position[1]-self.size[1]/2)
+                else:
+                    atkOrigin = pg.Vector2(atkOrigin[1],-atkOrigin[0])
+                    atkOrigin = atkOrigin*isoMoveScaleFactor((0,0),atkOrigin)
+                    atkOrigin += pg.Vector2(self.position[0],self.position[1]-self.size[1]/2)
+                self.primaryFireAlternateFlag = not self.primaryFireAlternateFlag
+
+                listOfAllProjectiles.append(Projectile("playerPrimary",self.autoAtkDmg,atkOrigin,self.World_Mouse_Pos,self.autoAtkSpeed,self.autoAtkLife,self.autoAtkSize))
+                
+        else:
+            self.autoAtkRemainingCooldownFrames-=1
 
 
+
+
+    def qAbilityTick(self):
+        if self.qAtkRemainingCooldownFrames <= 0:
+            if self.Mouse_L and self.keys[pg.K_q]:
+                #Put here anything that should happen on first press
+                self.qAtkRemainingCooldownFrames=self.qAtkCooldown
+                self.qAtkMousePos = self.World_Mouse_Pos
+                atkOrigin = (self.position[0],self.position[1]-self.size[1]/2)
+
+                self.primaryFireAlternateFlag = not self.primaryFireAlternateFlag
+
+                listOfAllProjectiles.append(Projectile("playerQ",self.qAtkDmg,atkOrigin,self.World_Mouse_Pos,self.qAtkSpeed,self.qAtkLife,self.qAtkSize))
+                
+        else:
+            self.qAtkRemainingCooldownFrames-=1
 
 
 

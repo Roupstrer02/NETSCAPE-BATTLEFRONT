@@ -43,8 +43,16 @@ while True:
     player.process_user_input()
     player.updatePlayerCamera()
 
+    player.qAbilityTick()
     player.eAbilityTick()#must happen before updatePOS()
     player.leftClickAbilityTick()
+
+
+
+
+
+
+    allProjectileTick()
 
     updateControlPoints()
 
@@ -52,9 +60,11 @@ while True:
     world.blit(worldMap, (0,0))
 
     #DRAW HERE WORLD ELEMENTS HERE-------------------------------------------
-    drawControlPoints()
+    drawControlPoints()     
+    
     
     player.drawOnWorld()
+    allProjectileDraw()
     
     for invader in invadersOnMap:
         invader.update()
@@ -70,6 +80,8 @@ while True:
 
             
     drawHighlightOnMousedOverInvader(player.World_Mouse_Pos)
+
+
     #------------------------------------------------------------------------
 
     #Cropping (to save on ram), Zooming, and Displaying World on "screen"
