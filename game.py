@@ -87,14 +87,14 @@ class Projectile:
         self.hitbox = pg.Rect(origin[0],origin[1],self.size[0],self.size[1])
         self.position = pg.Vector2(origin[0]+self.size[0]/2, origin[1]+self.size[1]/2)
         self.lifeInTicks = life
-        self.deleteMe = False
+        self.deleteMeFlag = False
         
 
         self.stepVector = pg.Vector2((pg.Vector2(target) - pg.Vector2(origin)).normalize() * speed * isoMoveScaleFactor(origin,target))
         
         
     def deleteProjectile(self):
-        self.deleteMe = True
+        self.deleteMeFlag = True
         
     def projectileTick(self):
         if self.typeOfProjectile == "playerPrimary":
@@ -151,18 +151,79 @@ class Projectile:
                 #adding small value to losCollidePoint so that its not in a wall
                 losCollidePoint=pg.Vector2(losCollidePoint)
 
-                if losCollidePoint[0] > nextPos[0]:
-                    losCollidePoint[0]=losCollidePoint[0] + 0.1
-                if losCollidePoint[0] < nextPos[0]:
-                    losCollidePoint[0]=losCollidePoint[0] - 0.1
+                # if losCollidePoint[0] > nextPos[0]:
+                #     losCollidePoint[0]=losCollidePoint[0] + 0.1
+                # if losCollidePoint[0] < nextPos[0]:
+                #     losCollidePoint[0]=losCollidePoint[0] - 0.1
                 
-                if losCollidePoint[1] > nextPos[1]:
-                    losCollidePoint[1]=losCollidePoint[1] + 0.1
-                if losCollidePoint[1] < nextPos[1]:
-                    losCollidePoint[1]=losCollidePoint[1] - 0.1
+                # if losCollidePoint[1] > nextPos[1]:
+                #     losCollidePoint[1]=losCollidePoint[1] + 0.1
+                # if losCollidePoint[1] < nextPos[1]:
+                #     losCollidePoint[1]=losCollidePoint[1] - 0.1
 
                 # draw a poof at losCollidePoint?
-                self.deleteProjectile()
+                #self.deleteProjectile()
+
+
+                ######
+                dist1ToLosCollidePoint = (pg.Vector2(self.position) - pg.Vector2(losCollidePoint)).length()
+                self.position = losCollidePoint
+
+                isoScaleFactorOG=isoMoveScaleFactor((0,0),self.stepVector)
+
+                
+                isInLos, _ = lineOfSight(self.position+pg.Vector2(0,0.0001),self.position+pg.Vector2(0.0002,0))
+
+                if isInLos:
+                    self.stepVector=self.stepVector.reflect((1,-1))*-1
+                else:
+                    self.stepVector=self.stepVector.reflect((1,1))*-1
+
+                self.stepVector = pg.Vector2(self.stepVector[0],self.stepVector[1]/4).normalize()*self.stepVector.length()
+
+                nextPos=self.position+self.stepVector.normalize()*(self.stepVector.length() - dist1ToLosCollidePoint)
+                isInLos, losCollidePoint = lineOfSight(self.position + self.stepVector*0.001, nextPos)
+                if not isInLos:
+                    #self.deleteProjectile()
+                    
+                    dist2toLosCollidePoint = (pg.Vector2(self.position) - pg.Vector2(losCollidePoint)).length()
+                    self.position = losCollidePoint
+                    
+                    isInLos, _ = lineOfSight(self.position+pg.Vector2(0,0.0001),self.position+pg.Vector2(0.0002,0))
+
+                    if isInLos:
+                        self.stepVector=self.stepVector.reflect((1,-1))*-1
+                    else:
+                        self.stepVector=self.stepVector.reflect((1,1))*-1
+
+                    self.stepVector = pg.Vector2(self.stepVector[0],self.stepVector[1]/4).normalize()*self.stepVector.length()
+
+
+
+                    self.position += self.stepVector.normalize()*(self.stepVector.length() - dist1ToLosCollidePoint-dist2toLosCollidePoint)
+                    self.stepVector = self.stepVector * isoMoveScaleFactor((0,0), self.stepVector) / isoScaleFactorOG
+                    self.hitbox.x = round(self.position[0]-self.size[0]/2)
+                    self.hitbox.y = round(self.position[1]-self.size[1]/2)
+
+
+
+                else:
+                    self.position += self.stepVector.normalize()*(self.stepVector.length() - dist1ToLosCollidePoint)
+                    self.stepVector = self.stepVector * isoMoveScaleFactor((0,0), self.stepVector) / isoScaleFactorOG
+                    self.hitbox.x = round(self.position[0]-self.size[0]/2)
+                    self.hitbox.y = round(self.position[1]-self.size[1]/2)
+
+
+
+
+                
+                    
+
+                ######
+
+
+
+            
             else:
                 self.position += self.stepVector
                 self.hitbox.x = self.position[0]-self.size[0]/2
@@ -179,7 +240,7 @@ class Projectile:
 def allProjectileTick():
     for projectile in listOfAllProjectiles:
         projectile.projectileTick()
-        if projectile.deleteMe:
+        if projectile.deleteMeFlag:
             listOfAllProjectiles.remove(projectile)
 
 def allProjectileDraw():
