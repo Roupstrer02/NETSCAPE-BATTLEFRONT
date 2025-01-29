@@ -101,6 +101,7 @@ while True:
             for i in range(len(waypoints)-1):
                 pg.draw.aaline(screen,"red", worldToScreenCoords(waypoints[i]), worldToScreenCoords(waypoints[i+1]))
 
+    displayInvaderResources()
     #draw all nodes and network edges
     # for currNode in list(pathfindingNetwork.keys()):
     #         pg.draw.circle(screen,"grey", worldToScreenCoords(currNode), 4)

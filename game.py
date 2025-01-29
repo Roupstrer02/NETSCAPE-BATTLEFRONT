@@ -21,8 +21,10 @@ controlPointLocations = {"PLAYERBASE": pg.Vector2(1990, 1625), "INVADERBASE": pg
 controlPointSize = 150
 
 gameFont = pg.font.Font('freesansbold.ttf', 12)
+uiFont = pg.font.Font('freesansbold.ttf', 32)
 
 invader_resources = dict()
+invader_resourcebar_color = 0xFFCC00 # **THE** orange color <==
 resource_gen_tick = 0
 resource_gen_speed = 1 #measured in resource/s
 unitTypeCost = {"Zergling": 10, "Roach": 15, "Hydralisk": 20, "Ultralisk": 30}
@@ -808,6 +810,25 @@ def read_student_input():
 
 # WARNING!!!!!!   Line indicated below can not detect wall when target and origin are horizontal
 #                    v v both are (x,y)
+
+def displayInvaderResources():
+    s_width = screen.get_width()
+    s_height = screen.get_height()
+
+    #drawing background first
+    pg.draw.rect(screen, invader_resourcebar_color, (0, 0, s_width, int(s_height / 10)))
+
+    all_drawn_resources = []
+    for key in invader_resources:
+        new_drawn_resource = uiFont.render(str(invader_resources[key]) + " food", False, 'black')
+        all_drawn_resources.append(new_drawn_resource)
+    
+    for i in range(0,len(all_drawn_resources)):
+        drawn_image_rect = all_drawn_resources[i].get_rect()
+        drawn_image_rect.center = ((s_width / 2) - 100 * (len(all_drawn_resources)-1) + 100 * i, s_height / 40)
+        screen.blit(all_drawn_resources[i], (drawn_image_rect.x, drawn_image_rect.y))
+
+
 def lineOfSight(origin,target):
     
     
