@@ -1,4 +1,5 @@
 import pygame as pg
+from pygame.locals import *
 import numpy as np
 from nodes import *
 from math import sqrt, sin, cos, radians, pi
@@ -17,11 +18,13 @@ invadersOnMap = []
 
 listOfAllProjectiles = []
 
+GameState = 0
+Victory = 0
 controlPointLocations = {"PLAYERBASE": pg.Vector2(1990, 1625), "INVADERBASE": pg.Vector2(3040, 1090), "CONTESTEDPOINT_A": pg.Vector2(2300, 1130), "CONTESTEDPOINT_B": pg.Vector2(2860, 1490)}
 controlPointSize = 150
 
 gameFont = pg.font.Font('freesansbold.ttf', 12)
-uiFont = pg.font.Font('freesansbold.ttf', 32)
+uiFont = pg.font.Font('freesansbold.ttf', 28)
 
 invader_resources = dict()
 invader_color_uuid = dict()
@@ -827,7 +830,7 @@ def displayInvaderResources():
     
     for i in range(0,len(all_drawn_resources)):
         drawn_image_rect = all_drawn_resources[i].get_rect()
-        drawn_image_rect.center = ((s_width / 2) - 100 * (len(all_drawn_resources)-1) + 100 * i, s_height / 20)
+        drawn_image_rect.center = ((s_width / 2) - (75 * (len(all_drawn_resources)-1)) + (150 * i), s_height / 20)
         screen.blit(all_drawn_resources[i], (drawn_image_rect.x, drawn_image_rect.y))
 
 
@@ -1084,3 +1087,138 @@ def drawHighlightOnMousedOverInvader(target):
     indexOfMouseOverInvader = indexOfInvaderAtPoint(target)
     if indexOfMouseOverInvader != None:
         pg.draw.rect(world,(200,40,40), invadersOnMap[indexOfMouseOverInvader].hitbox, 1)
+
+
+def checkForVictory():
+    global Victory
+    Player_C_Points = 0
+    Invader_C_Points = 0
+    
+    for C_Point in controlPoints:
+        if C_Point.alignment == 0:
+            Player_C_Points += 1
+        elif C_Point.alignment == 2:
+            Invader_C_Points += 1
+    
+    #Player Wins -> Victory is 1
+    if Player_C_Points == 4:
+        GameState = 2
+        Victory = 1
+    #Invaders Wins -> Victory is -1
+    #yes i know that's the opposite of the alignments for control points but so be it...
+    elif Invader_C_Points == 4:
+        GameState = 2
+        Victory = -1
+
+def MainMenu():
+    #first add a button that makes the GameState = 1
+    pass
+
+def playMainGame():
+    #Updates <-could be a better name
+    
+    read_student_input()
+    update_invader_resources()
+    update_invader_control_points_file()
+    for event in pg.event.get():
+        if event.type == QUIT:
+            pg.quit()
+        elif event.type == MOUSEWHEEL:
+            player.mouseWheel = event.y
+
+                
+
+    player.process_user_input()
+    player.updatePlayerCamera()
+
+    player.qAbilityTick()
+    player.eAbilityTick()#must happen before updatePOS()
+    player.leftClickAbilityTick()
+
+
+
+
+
+
+    allProjectileTick()
+
+    updateControlPoints()
+
+    #Drawing World Map
+    world.blit(worldMap, (0,0))
+
+    #DRAW HERE WORLD ELEMENTS HERE-------------------------------------------
+    drawControlPoints()     
+    
+    
+    player.drawOnWorld()
+    allProjectileDraw()
+    
+    for invader in invadersOnMap:
+        invader.update()
+        invader.draw(world)
+
+    #player update
+    player.pathfind()
+    player.updatePos()
+    
+    #pg.draw.rect(world,"red",(2120-1,1550-1,2,2))
+
+    
+
+            
+    drawHighlightOnMousedOverInvader(player.World_Mouse_Pos)
+
+
+    #------------------------------------------------------------------------
+
+    #Cropping (to save on ram), Zooming, and Displaying World on "screen"
+    cropWorldView()
+
+    #DRAW HERE UI ELEMENTS HERE----------------------------------------------
+    player.drawOnWorld()
+    
+    
+    #TEMP: MOVE TO DEBUG MODE
+    if player.path != []:
+            waypoints = player.path
+            pg.draw.aaline(screen,"red", worldToScreenCoords(player.position), worldToScreenCoords(waypoints[0]))
+
+            for node in waypoints:
+                pg.draw.circle(screen,"red", worldToScreenCoords(node), 6)
+            for i in range(len(waypoints)-1):
+                pg.draw.aaline(screen,"red", worldToScreenCoords(waypoints[i]), worldToScreenCoords(waypoints[i+1]))
+
+    displayInvaderResources()
+    #draw all nodes and network edges
+    # for currNode in list(pathfindingNetwork.keys()):
+    #         pg.draw.circle(screen,"grey", worldToScreenCoords(currNode), 4)
+    #         for targetNode in pathfindingNetwork.get(currNode):
+    #             pg.draw.aaline(screen,"grey", worldToScreenCoords(currNode), worldToScreenCoords(targetNode))
+    
+    
+    #Shows Nodes in LOS of player
+    # for node in list(pathfindingNetwork.keys()):
+    #         isInLos, _ = lineOfSight(player.position,node)
+    #         if isInLos:
+    #             pg.draw.aaline(screen,"grey", worldToScreenCoords(player.position), worldToScreenCoords(node))
+    
+    #Shows Nodes in LOS of player's final waypoint
+    # if player.path != []:
+    #     for node in list(pathfindingNetwork.keys()):
+    #             isInLos, _ = lineOfSight(player.path[-1],node)
+    #             if isInLos:
+    #                 pg.draw.aaline(screen,"grey", worldToScreenCoords(player.path[-1]), worldToScreenCoords(node))
+    #------------------------------------------------------------------------
+
+def GameEndScreen():
+    global Victory
+    if Victory == 1:
+        #PLAYER WINS!!!
+        pass
+    elif Victory == -1:
+        #INVADERS WIN!!!
+        pass
+
+    #add button here to go back to main menu
+    pass
