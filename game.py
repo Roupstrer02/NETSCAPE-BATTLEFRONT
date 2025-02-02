@@ -24,6 +24,7 @@ gameFont = pg.font.Font('freesansbold.ttf', 12)
 uiFont = pg.font.Font('freesansbold.ttf', 32)
 
 invader_resources = dict()
+invader_color_uuid = dict()
 invader_resourcebar_color = 0xFFCC00 # **THE** orange color <==
 resource_gen_tick = 0
 resource_gen_speed = 1 #measured in resource/s
@@ -782,6 +783,7 @@ def read_student_input():
                 S_Resources = invader_resources[spawninfo[4]]
             else:
                 invader_resources[spawninfo[4]] = 50
+                invader_color_uuid[spawninfo[4]] = (rd.randint(0,255), rd.randint(0,100), rd.randint(100,255))
                 S_Resources = 50
             
             if controlPoints[spawninfo[1]].alignment == 2:
@@ -820,12 +822,12 @@ def displayInvaderResources():
 
     all_drawn_resources = []
     for key in invader_resources:
-        new_drawn_resource = uiFont.render(str(invader_resources[key]) + " food", False, 'black')
+        new_drawn_resource = uiFont.render(str(invader_resources[key]) + " food", False, invader_color_uuid[key])
         all_drawn_resources.append(new_drawn_resource)
     
     for i in range(0,len(all_drawn_resources)):
         drawn_image_rect = all_drawn_resources[i].get_rect()
-        drawn_image_rect.center = ((s_width / 2) - 100 * (len(all_drawn_resources)-1) + 100 * i, s_height / 40)
+        drawn_image_rect.center = ((s_width / 2) - 100 * (len(all_drawn_resources)-1) + 100 * i, s_height / 20)
         screen.blit(all_drawn_resources[i], (drawn_image_rect.x, drawn_image_rect.y))
 
 
