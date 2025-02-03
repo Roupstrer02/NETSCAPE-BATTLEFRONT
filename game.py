@@ -694,11 +694,6 @@ class Invader:
         self.healthbar = pg.Rect(round(self.position[0] - (self.size[0] * 0.75)), round(self.position[1] - (self.size[1] * 1.5)), self.healthbarSize[0], self.healthbarSize[1])
         self.hitbox.center = (spawnLoc[0], spawnLoc[1]-self.size[1]/2)
 
-
-
-    #All Invaders still need to:
-    # be able to target player when nearby and chase them
-
     def draw(self, surface):
 
         health_percent_factor_colour = pg.math.lerp(0,255, self.health / self.maxHealth)

@@ -11,6 +11,8 @@ from game import *
 #========================================================================================================================================
 #   To do list:
 #
+#       - make a custom lerp function to bypass the error on mu editor
+#
 #       - invaders attacks -> Armen
 #       - player abilities -> Armen
 #       - invader resources
