@@ -6,6 +6,9 @@ from math import sqrt, sin, cos, radians, pi
 import copy
 import random as rd
 
+#Debug mode
+debugMode = False
+
 #init declarations
 pg.init()
 screenSize = (1200,800)
@@ -13,6 +16,19 @@ clock = pg.time.Clock()
 screen = pg.display.set_mode(screenSize)
 pg.display.set_caption('NETSCAPE: BATTLEFRONT')
 fpsClock = pg.time.Clock()
+
+# Main Menu declarations #
+# ====================== #
+startGameButton = pg.Rect(0,0,screen.get_width() * 0.4, screen.get_height() * 0.2)
+startGameButton.center = (screen.get_width() * 0.5, screen.get_height() * 0.85)
+
+startGameButtonColor = (40,150,40)
+
+menuFont = pg.font.Font('freesansbold.ttf', 34)
+startGameButtonText = menuFont.render("Start Game", False, 'black')
+startGameButtonTextRect = startGameButtonText.get_rect()
+startGameButtonTextRect.center = startGameButton.center
+# ====================== #
 
 invadersOnMap = []
 
@@ -43,6 +59,7 @@ allWallEdgeMatrixMathPreCalcC = np.subtract(allWallEdgesMatrix[1,:,1],allWallEdg
 
 
 #Loading Map Image, some Surface inits
+MainMenuBackground = pg.image.load("MainMenuBackground.png").convert()
 worldMap = pg.image.load("Map - Iso.png").convert()
 worldCroppedScaled=pg.Surface(screenSize)
 world=pg.Surface((5080,2660))#size of the PNG must never change
@@ -789,7 +806,7 @@ def read_student_input():
                 invader_color_uuid[spawninfo[4]] = (rd.randint(0,255), rd.randint(0,100), rd.randint(100,255))
                 S_Resources = 50
             
-            if controlPoints[spawninfo[1]].alignment == 2:
+            if GameState == 1 and controlPoints[spawninfo[1]].alignment == 2:
                 for _ in range(0,int(spawninfo[3])):
                     unitCost = unitTypeCost[spawninfo[0]]
                     if S_Resources >= unitCost:
@@ -819,19 +836,33 @@ def read_student_input():
 def displayInvaderResources():
     s_width = screen.get_width()
     s_height = screen.get_height()
-
-    #drawing background first
-    pg.draw.rect(screen, invader_resourcebar_color, (0, 0, s_width, int(s_height / 10)))
-
+    
     all_drawn_resources = []
     for key in invader_resources:
         new_drawn_resource = uiFont.render(str(invader_resources[key]) + " food", False, invader_color_uuid[key])
         all_drawn_resources.append(new_drawn_resource)
-    
-    for i in range(0,len(all_drawn_resources)):
-        drawn_image_rect = all_drawn_resources[i].get_rect()
-        drawn_image_rect.center = ((s_width / 2) - (75 * (len(all_drawn_resources)-1)) + (150 * i), s_height / 20)
-        screen.blit(all_drawn_resources[i], (drawn_image_rect.x, drawn_image_rect.y))
+        
+    #shows invaders in menu
+    if GameState == 0:
+        
+        pg.draw.rect(screen, invader_resourcebar_color, (0, 0, screen.get_width() / 5, screen.get_height()))
+        pg.draw.rect(screen, invader_resourcebar_color, (4 * screen.get_width() / 5, 0, screen.get_width() / 5, screen.get_height()))
+
+        for i in range(0,len(all_drawn_resources)):
+            drawn_image_rect = all_drawn_resources[i].get_rect()
+            drawn_image_rect.center = ((s_width / 10) + (s_width * 8 / 10) * (i % 2), s_height * ((3 + (2 * (i // 2))) / 10))
+            screen.blit(all_drawn_resources[i], (drawn_image_rect.x, drawn_image_rect.y))
+
+    #shows invaders in main game
+    elif GameState == 1:
+
+        #drawing background first
+        pg.draw.rect(screen, invader_resourcebar_color, (0, 0, s_width, int(s_height / 10)))
+
+        for i in range(0,len(all_drawn_resources)):
+            drawn_image_rect = all_drawn_resources[i].get_rect()
+            drawn_image_rect.center = ((s_width / 2) - (75 * (len(all_drawn_resources)-1)) + (150 * i), s_height / 20)
+            screen.blit(all_drawn_resources[i], (drawn_image_rect.x, drawn_image_rect.y))
 
 
 def lineOfSight(origin,target):
@@ -1090,7 +1121,7 @@ def drawHighlightOnMousedOverInvader(target):
 
 
 def checkForVictory():
-    global Victory
+    global Victory, GameState
     Player_C_Points = 0
     Invader_C_Points = 0
     
@@ -1111,11 +1142,23 @@ def checkForVictory():
         Victory = -1
 
 def MainMenu():
-    #first add a button that makes the GameState = 1
-    pass
+    global GameState
+    #play main menu music
+    pg.event.pump()
+    read_student_input()
+
+    L, M, R = pg.mouse.get_pressed()
+    mousePos = pg.mouse.get_pos()
+
+    if startGameButton.collidepoint(mousePos) and L:
+        GameState = 1
+
+    screen.blit(MainMenuBackground, (0, 0))
+    displayInvaderResources()
+    pg.draw.rect(screen, startGameButtonColor, startGameButton)
+    screen.blit(startGameButtonText, (startGameButtonTextRect.x, startGameButtonTextRect.y))
 
 def playMainGame():
-    #Updates <-could be a better name
     
     read_student_input()
     update_invader_resources()
@@ -1222,3 +1265,22 @@ def GameEndScreen():
 
     #add button here to go back to main menu
     pass
+
+
+
+def Begin_Invasion():
+    while True:
+    
+        if GameState == 0:
+            MainMenu()
+            
+        elif GameState == 1:
+            playMainGame()
+
+        elif GameState == 2:
+            GameEndScreen()
+            
+
+        #standard game loop
+        pg.display.flip()
+        clock.tick(60)
