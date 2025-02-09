@@ -40,6 +40,8 @@ controlPointLocations = {"PLAYERBASE": pg.Vector2(1990, 1625), "INVADERBASE": pg
 controlPointSize = 150
 
 gameFont = pg.font.Font('freesansbold.ttf', 12)
+
+dashCooldownDisplayRect = pg.Rect(0, screen.get_height() * 0.85, screen.get_height() * 0.15, screen.get_height() * 0.15)
 uiFont = pg.font.Font('freesansbold.ttf', 28)
 
 invader_resources = dict()
@@ -696,8 +698,8 @@ class Invader:
 
     def draw(self, surface):
 
-        health_percent_factor_colour = pg.math.lerp(0,255, self.health / self.maxHealth)
-        health_percent_size = pg.math.lerp(0,self.healthbarSize[0], self.health / self.maxHealth)
+        health_percent_factor_colour = lerp(0,255, self.health / self.maxHealth)
+        health_percent_size = lerp(0,self.healthbarSize[0], self.health / self.maxHealth)
         colour = (255 - health_percent_factor_colour, health_percent_factor_colour, 0)
         self.healthbar.w = health_percent_size
 
@@ -749,6 +751,11 @@ class Invader:
 
         self.healthbar.x = round(self.position[0] - (self.size[0] * 0.75))
         self.healthbar.y = round(self.position[1] - (self.size[1] * 1.5))
+
+#========================================================================================================================================
+#helper functions
+def lerp(low, high, weight):
+    return low + (high - low) * weight
 
 def init_invader_control_points_file():
     with open("invader_control_points.txt", "w") as cPoints:
@@ -859,6 +866,21 @@ def displayInvaderResources():
             drawn_image_rect.center = ((s_width / 2) - (75 * (len(all_drawn_resources)-1)) + (150 * i), s_height / 20)
             screen.blit(all_drawn_resources[i], (drawn_image_rect.x, drawn_image_rect.y))
 
+def displayPlayerUI():
+    s_width = screen.get_width()
+    s_height = screen.get_height()
+   
+    
+
+    if player.dashRemainingCooldownFrames == 0:
+        pg.draw.rect(screen, 'green', dashCooldownDisplayRect)
+    else:
+        pg.draw.rect(screen, 'red', dashCooldownDisplayRect)
+
+    cooldownText = uiFont.render(str(round(player.dashRemainingCooldownFrames / 60, 1)), False, 'black')
+    cooldownTextRect = cooldownText.get_rect()
+    cooldownTextRect.center = dashCooldownDisplayRect.center
+    screen.blit(cooldownText, (cooldownTextRect.x, cooldownTextRect.y))
 
 def lineOfSight(origin,target):
     
@@ -1228,6 +1250,7 @@ def playMainGame():
                 pg.draw.aaline(screen,"red", worldToScreenCoords(waypoints[i]), worldToScreenCoords(waypoints[i+1]))
 
     displayInvaderResources()
+    displayPlayerUI()
     #draw all nodes and network edges
     # for currNode in list(pathfindingNetwork.keys()):
     #         pg.draw.circle(screen,"grey", worldToScreenCoords(currNode), 4)
