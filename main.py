@@ -11,11 +11,11 @@ from game import *
 #========================================================================================================================================
 #   To do list:
 #
-#       - invaders attacks -> Armen
-#       - player abilities -> Armen
-#       - invader resources
-#           * resource generation over time should be scaled per player count
-#       - add UI + Minimap
+#
+#
+#
+#
+#
 #
 #========================================================================================================================================
 

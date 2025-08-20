@@ -664,10 +664,12 @@ class Invader:
 
 
 
-    def __init__(self, invaderType, spawnLoc, destinationLoc):
+    def __init__(self, invaderType, spawnLoc, destinationLoc, playeruuid):
         self.position = pg.Vector2(spawnLoc[0], spawnLoc[1])
         self.PermanentTargetDestination = destinationLoc
         self.path = generatePath(self.position, self.PermanentTargetDestination)
+        self.playeruuid = playeruuid
+        self.colour = invader_color_uuid[self.playeruuid]
 
         #change the unit's stats, range, etc. based on invaderType ("zergling", "roach", "hydralisk", "ultralisk", etc.)
         if invaderType == "Zergling":
@@ -710,7 +712,7 @@ class Invader:
         colour = (255 - max(0,health_percent_factor_colour), max(0,health_percent_factor_colour), 0)
         self.healthbar.w = health_percent_size
 
-        pg.draw.ellipse(surface, "red", self.hitbox)
+        pg.draw.ellipse(surface, self.colour, self.hitbox)
         pg.draw.rect(surface, colour, self.healthbar)
 
     def damage(self, amount):
@@ -831,7 +833,7 @@ def read_student_input():
                         destY = round(destX * sin(rd.random() * (pi / 2)) / 2)
                         destination[0] += rd.randint(-destX, destX)
                         destination[1] += rd.randint(-destY, destY)
-                        invadersOnMap.append(Invader(spawninfo[0], spawnpoint, destination))
+                        invadersOnMap.append(Invader(spawninfo[0], spawnpoint, destination, spawninfo[4]))
                         S_Resources -= unitCost
 
                 invader_resources[spawninfo[4]] = S_Resources
