@@ -177,6 +177,8 @@ class Player:
         self.mouseWheel = 0
         self.keys=pg.key.get_pressed()
         self.keysLast = self.keys
+        self.healthbarsize = (int(screen.get_width() * 0.75), int(screen.get_width() * 0.01))
+        self.healthbar = pg.Rect(screen.get_width() // 2, screen.get_height() * 0.92, self.healthbarsize[0], self.healthbarsize[1])
 
 
         self.disableWalking = False
@@ -880,7 +882,7 @@ def displayPlayerUI():
     s_width = screen.get_width()
     s_height = screen.get_height()
 
-
+    
 
     if player.dashRemainingCooldownFrames == 0:
         pg.draw.rect(screen, 'green', dashCooldownDisplayRect)
